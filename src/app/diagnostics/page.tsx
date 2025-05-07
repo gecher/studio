@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Microscope, CalendarDays, Clock, Users, CheckCircle, Search, Package, Home } from 'lucide-react';
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
 
 // Mock data
 const popularTests = [
