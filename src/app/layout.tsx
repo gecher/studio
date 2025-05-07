@@ -8,7 +8,8 @@ import Header from '@/components/layout/header';
 import SidebarNav from '@/components/layout/sidebar-nav';
 import ChatbotWidget from '@/components/layout/chatbot-widget';
 import { ChatbotProvider } from '@/contexts/chatbot-context';
-import { LanguageProvider } from '@/contexts/language-context'; // Import LanguageProvider
+import { LanguageProvider } from '@/contexts/language-context';
+import { AuthProvider } from '@/contexts/auth-context'; // Import AuthProvider
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,20 +34,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <LanguageProvider> {/* Wrap with LanguageProvider */}
-          <ChatbotProvider>
-            <SidebarProvider defaultOpen={true}>
-              <SidebarNav />
-              <div className="flex flex-col flex-1 min-h-screen">
-                <Header />
-                <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-background">
-                  {children}
-                </main>
-              </div>
-              <ChatbotWidget />
-            </SidebarProvider>
-          </ChatbotProvider>
-        </LanguageProvider>
+        <AuthProvider> {/* Wrap with AuthProvider */}
+          <LanguageProvider>
+            <ChatbotProvider>
+              <SidebarProvider defaultOpen={true}>
+                <SidebarNav />
+                <div className="flex flex-col flex-1 min-h-screen">
+                  <Header />
+                  <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-background">
+                    {children}
+                  </main>
+                </div>
+                <ChatbotWidget />
+              </SidebarProvider>
+            </ChatbotProvider>
+          </LanguageProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

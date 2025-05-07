@@ -17,6 +17,8 @@ import {
   Settings2,
   MessageCircle,
   BriefcaseMedical,
+  LogIn,
+  LogOut,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -33,6 +35,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useChatbot } from '@/contexts/chatbot-context';
 import { useLanguage, type Language as AppLanguage } from '@/contexts/language-context'; 
+import { useAuth } from '@/contexts/auth-context'; // Import useAuth
 
 interface NavItem {
   href?: string;
@@ -40,27 +43,40 @@ interface NavItem {
   amharicLabel?: string; 
   icon: LucideIcon;
   adminOnly?: boolean;
+  authRequired?: boolean; // New property: true if requires login
+  guestOnly?: boolean; // New property: true if only for guests (not logged in)
   action?: () => void;
 }
 
-const navItemsList = (setIsChatbotOpen: (open: boolean) => void, currentLanguage: AppLanguage): NavItem[] => [
+const navItemsList = (
+  setIsChatbotOpen: (open: boolean) => void, 
+  handleLogout: () => void,
+  currentLanguage: AppLanguage,
+  isAuthenticated: boolean,
+  isAdmin: boolean
+): NavItem[] => [
   { href: '/', label: 'Home', amharicLabel: 'ዋና ገጽ', icon: HomeIcon },
   { href: '/order-medicines', label: 'Order Medicines', amharicLabel: 'መድኃኒቶችን ይዘዙ', icon: PillIconLucide },
   { href: '/products', label: 'Healthcare Products', amharicLabel: 'የጤና ምርቶች', icon: BriefcaseMedical },
   { href: '/diagnostics', label: 'Book Diagnostics', amharicLabel: 'ምርመራ ያስይዙ', icon: FlaskConical },
   { href: '/teleconsultation', label: 'Teleconsultation', amharicLabel: 'የቴሌ ምክክር', icon: Video },
-  { href: '/subscriptions', label: 'My Subscriptions', amharicLabel: 'የእኔ ምዝገባዎች', icon: Repeat },
+  { href: '/subscriptions', label: 'Subscriptions', amharicLabel: 'ምዝገባዎች', icon: Repeat, authRequired: true },
   { href: '/health-hub', label: 'Health Hub', amharicLabel: 'የጤና መረጃ ማዕከል', icon: BookOpenText },
   { href: '/pharmacy-locator', label: 'Pharmacy Locator', amharicLabel: 'ፋርማሲ አመልካች', icon: MapPin },
-  { href: '/insurance', label: 'My Insurance', amharicLabel: 'የእኔ መድን', icon: ShieldCheck },
-  { href: '/profile', label: 'User Profile', amharicLabel: 'የተጠቃሚ መገለጫ', icon: UserCircle2 },
+  { href: '/insurance', label: 'My Insurance', amharicLabel: 'የእኔ መድን', icon: ShieldCheck, authRequired: true },
+  { href: '/profile', label: 'My Profile', amharicLabel: 'የእኔ መገለጫ', icon: UserCircle2, authRequired: true },
   { 
     label: 'Support Chatbot', 
     amharicLabel: 'የድጋፍ ቻትቦት',
     icon: MessageCircle, 
     action: () => setIsChatbotOpen(true) 
   },
-  { href: '/admin', label: 'Admin Dashboard', amharicLabel: 'የአስተዳዳሪ ዳሽቦርድ', icon: Settings2, adminOnly: true },
+  // Conditional Auth Links
+  { href: '/auth/login', label: 'Login', amharicLabel: 'ግባ', icon: LogIn, guestOnly: true },
+  { label: 'Logout', amharicLabel: 'ውጣ', icon: LogOut, authRequired: true, action: handleLogout },
+  
+  // Admin Link
+  ...(isAdmin && isAuthenticated ? [{ href: '/admin', label: 'Admin Dashboard', amharicLabel: 'የአስተዳዳሪ ዳሽቦርድ', icon: Settings2, adminOnly: true, authRequired: true }] : []),
 ];
 
 export default function SidebarNav() {
@@ -68,14 +84,22 @@ export default function SidebarNav() {
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
   const { setIsChatbotOpen } = useChatbot();
   const { language, mounted: languageMounted } = useLanguage(); 
+  const { isAuthenticated, currentUser, logout, mounted: authMounted } = useAuth();
 
-  const isAdmin = true; 
+  // Mock admin role check - replace with actual logic
+  const isAdmin = currentUser?.role === 'admin'; 
   
-  if (!languageMounted) {
-    return null; 
+  if (!languageMounted || !authMounted) { // Ensure both contexts are mounted
+    return null; // Or a skeleton loader
   }
 
-  const currentNavItems = navItemsList(setIsChatbotOpen, language);
+  const handleLogout = () => {
+    logout();
+    if (isMobile) setOpenMobile(false);
+    // router.push('/'); // Optional: redirect after logout
+  };
+
+  const currentNavItems = navItemsList(setIsChatbotOpen, handleLogout, language, isAuthenticated, isAdmin);
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
@@ -91,9 +115,11 @@ export default function SidebarNav() {
       <SidebarContent>
         <SidebarMenu>
           {currentNavItems.map((item) => {
-            if (item.adminOnly && !isAdmin) {
-              return null;
-            }
+            // Conditional rendering based on auth state
+            if (item.authRequired && !isAuthenticated) return null;
+            if (item.guestOnly && isAuthenticated) return null;
+            if (item.adminOnly && (!isAuthenticated || !isAdmin)) return null;
+
             const Icon = item.icon;
             const isActive = item.href ? (pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))) : false;
             
@@ -107,7 +133,7 @@ export default function SidebarNav() {
                       item.action!();
                       if (isMobile) setOpenMobile(false);
                     }}
-                    isActive={false}
+                    isActive={false} // Actions typically aren't "active" like navigation links
                     tooltip={{ children: displayLabel, side: 'right', align: 'center' }}
                     className={cn("hover:bg-sidebar-accent hover:text-sidebar-accent-foreground")}
                   >
