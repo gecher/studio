@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
-import { PlusCircle, Filter } from 'lucide-react';
+import { PlusCircle, Filter, CheckCircle, XCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -106,3 +106,4 @@ export default function UserManagementPage() {
     </div>
   );
 }
+
