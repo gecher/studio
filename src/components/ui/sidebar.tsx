@@ -8,9 +8,10 @@ import { PanelLeft } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import type { ButtonProps } from "@/components/ui/button" // Import ButtonProps
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetClose } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -198,7 +199,7 @@ const Sidebar = React.forwardRef<
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -206,6 +207,7 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
+            {/* Removed [&>button]:hidden as SheetClose might be a button */}
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
@@ -260,30 +262,52 @@ const Sidebar = React.forwardRef<
 Sidebar.displayName = "Sidebar"
 
 const SidebarTrigger = React.forwardRef<
-  React.ElementRef<typeof Button>,
-  React.ComponentProps<typeof Button>
->(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar()
+  HTMLButtonElement,
+  ButtonProps // Use ButtonProps as SidebarTrigger is essentially a Button or wraps one
+>(({ className, onClick: parentOnClick, asChild = false, children, ...props }, ref) => {
+  const { toggleSidebar } = useSidebar();
 
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    parentOnClick?.(event);
+    if (!event.defaultPrevented) {
+      toggleSidebar();
+    }
+  };
+
+  if (asChild) {
+    // When asChild is true, Slot clones its child (children passed to SidebarTrigger)
+    // and merges props onto it. The child must be a single React element.
+    return (
+      <Slot
+        ref={ref}
+        data-sidebar="trigger" // Keep custom data attribute if needed for styling/selection
+        onClick={handleClick}
+        className={className} // Pass className from SidebarTrigger usage to Slot
+        {...props} // Pass other general HTML attributes (and specific ones if child accepts them)
+      >
+        {children}
+      </Slot>
+    );
+  }
+
+  // Default rendering: SidebarTrigger is a Button with default content
   return (
     <Button
       ref={ref}
       data-sidebar="trigger"
-      variant="ghost"
-      size="icon"
-      className={cn("h-7 w-7", className)}
-      onClick={(event) => {
-        onClick?.(event)
-        toggleSidebar()
-      }}
-      {...props}
+      variant="ghost" // Default variant
+      size="icon"     // Default size
+      className={cn("h-7 w-7", className)} // Default styling + passed className
+      onClick={handleClick}
+      {...props} // Spread other Button-compatible props
     >
       <PanelLeft />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
-  )
-})
+  );
+});
 SidebarTrigger.displayName = "SidebarTrigger"
+
 
 const SidebarRail = React.forwardRef<
   HTMLButtonElement,
@@ -760,4 +784,5 @@ export {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
+  SheetClose // Export SheetClose
 }
