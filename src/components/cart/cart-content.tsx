@@ -7,6 +7,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@/contexts/auth-context";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock cart items - replace with actual cart data logic
 const mockCartItems = [
@@ -15,11 +18,35 @@ const mockCartItems = [
 ];
 
 export default function CartPageContent() {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+
   // In a real app, you'd use state management (e.g., Context, Zustand, Redux) for cart items
   const cartItems = mockCartItems; 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryFee = cartItems.length > 0 ? 50 : 0; // Example delivery fee
   const total = subtotal + deliveryFee;
+
+  const handleCheckout = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to proceed to checkout.',
+        variant: 'destructive',
+      });
+      router.push('/auth/login?redirect=/order-medicines'); // Or a dedicated checkout page
+      return;
+    }
+    // Proceed to checkout logic
+    toast({
+      title: 'Proceeding to Checkout',
+      description: 'You will be redirected to the payment page.',
+    });
+    console.log('Proceeding to checkout');
+    // router.push('/checkout'); // Example redirect
+  };
+
 
   if (cartItems.length === 0) {
     return (
@@ -75,7 +102,7 @@ export default function CartPageContent() {
           <span>Total:</span>
           <span>{total.toFixed(2)} ETB</span>
         </div>
-        <Button size="lg" className="w-full mt-4 bg-accent hover:bg-accent/90 text-accent-foreground">
+        <Button size="lg" className="w-full mt-4 bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleCheckout}>
           Proceed to Checkout
         </Button>
         <Link href="/order-medicines" className="w-full">

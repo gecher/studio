@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'; // Added useRouter
 import type { LucideIcon } from 'lucide-react';
 import {
   HomeIcon,
@@ -29,13 +29,15 @@ import {
   SidebarHeader,
   SidebarFooter,
   useSidebar,
-  SheetClose 
+  SheetClose, 
+  CloseIcon
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useChatbot } from '@/contexts/chatbot-context';
 import { useLanguage, type Language as AppLanguage } from '@/contexts/language-context'; 
-import { useAuth } from '@/contexts/auth-context'; // Import useAuth
+import { useAuth } from '@/contexts/auth-context'; 
+import { useToast } from '@/hooks/use-toast';
 
 interface NavItem {
   href?: string;
@@ -43,8 +45,8 @@ interface NavItem {
   amharicLabel?: string; 
   icon: LucideIcon;
   adminOnly?: boolean;
-  authRequired?: boolean; // New property: true if requires login
-  guestOnly?: boolean; // New property: true if only for guests (not logged in)
+  authRequired?: boolean; 
+  guestOnly?: boolean; 
   action?: () => void;
 }
 
@@ -81,22 +83,27 @@ const navItemsList = (
 
 export default function SidebarNav() {
   const pathname = usePathname();
+  const router = useRouter(); 
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
   const { setIsChatbotOpen } = useChatbot();
   const { language, mounted: languageMounted } = useLanguage(); 
   const { isAuthenticated, currentUser, logout, mounted: authMounted } = useAuth();
+  const { toast } = useToast();
 
-  // Mock admin role check - replace with actual logic
   const isAdmin = currentUser?.role === 'admin'; 
   
-  if (!languageMounted || !authMounted) { // Ensure both contexts are mounted
-    return null; // Or a skeleton loader
+  if (!languageMounted || !authMounted) { 
+    return null; 
   }
 
   const handleLogout = () => {
     logout();
+    toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+    });
     if (isMobile) setOpenMobile(false);
-    // router.push('/'); // Optional: redirect after logout
+    router.push('/'); 
   };
 
   const currentNavItems = navItemsList(setIsChatbotOpen, handleLogout, language, isAuthenticated, isAdmin);
@@ -107,7 +114,7 @@ export default function SidebarNav() {
         {isMobile && (
           <SheetClose asChild>
             <Button variant="ghost" size="icon" className="text-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <CloseIcon className="h-6 w-6" />
             </Button>
           </SheetClose>
         )}
@@ -115,7 +122,6 @@ export default function SidebarNav() {
       <SidebarContent>
         <SidebarMenu>
           {currentNavItems.map((item) => {
-            // Conditional rendering based on auth state
             if (item.authRequired && !isAuthenticated) return null;
             if (item.guestOnly && isAuthenticated) return null;
             if (item.adminOnly && (!isAuthenticated || !isAdmin)) return null;
@@ -133,7 +139,7 @@ export default function SidebarNav() {
                       item.action!();
                       if (isMobile) setOpenMobile(false);
                     }}
-                    isActive={false} // Actions typically aren't "active" like navigation links
+                    isActive={false} 
                     tooltip={{ children: displayLabel, side: 'right', align: 'center' }}
                     className={cn("hover:bg-sidebar-accent hover:text-sidebar-accent-foreground")}
                   >

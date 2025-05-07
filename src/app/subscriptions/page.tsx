@@ -1,9 +1,14 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Repeat, Zap, ShieldCheck, Truck, Award } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from 'react';
 
 const subscriptionPlans = [
   {
@@ -59,6 +64,39 @@ const subscriptionPlans = [
 ];
 
 export default function SubscriptionsPage() {
+  const { isAuthenticated, mounted: authMounted } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [clientMounted, setClientMounted] = useState(false);
+
+  useEffect(() => {
+    setClientMounted(true);
+  }, []);
+
+
+  const handleSubscriptionAction = (planName: string) => {
+    if (!authMounted) return;
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to subscribe to a plan.',
+        variant: 'destructive',
+      });
+      router.push('/auth/login?redirect=/subscriptions');
+      return;
+    }
+    // Proceed with subscription logic
+     toast({
+        title: 'Subscription Updated!',
+        description: `You are now subscribed to ${planName}.`,
+      });
+    console.log(`Subscribing to ${planName}`);
+  };
+
+  if (!clientMounted) {
+    return <div>Loading page...</div>; // Or a skeleton loader
+  }
+
   return (
     <div className="space-y-12">
       <header className="text-center">
@@ -98,7 +136,7 @@ export default function SubscriptionsPage() {
               <Button 
                 className={`w-full text-lg py-6 ${plan.isPopular ? 'bg-accent hover:bg-accent/90 text-accent-foreground' : plan.isCurrent ? 'bg-gray-200 text-gray-700 cursor-not-allowed' : 'bg-primary hover:bg-primary/90'}`}
                 disabled={plan.isCurrent}
-                onClick={() => alert(`Subscribing to ${plan.name}`)}
+                onClick={() => handleSubscriptionAction(plan.name)}
               >
                 {plan.actionLabel}
               </Button>
@@ -153,13 +191,14 @@ export default function SubscriptionsPage() {
       </section>
 
       {/* Manage Subscription Section (for logged-in users) */}
-      {/* This section would typically only show if the user is logged in and has a subscription */}
-      <section className="text-center">
-        <p className="text-muted-foreground">Already a member?</p>
-        <Link href="/profile#subscriptions">
-          <Button variant="link" className="text-primary text-lg">Manage Your Subscription</Button>
-        </Link>
-      </section>
+      {isAuthenticated && authMounted && (
+        <section className="text-center">
+            <p className="text-muted-foreground">You are currently subscribed or can manage your subscription options.</p>
+            <Link href="/profile#subscriptions">
+            <Button variant="link" className="text-primary text-lg">Manage Your Subscription</Button>
+            </Link>
+        </section>
+      )}
     </div>
   );
 }

@@ -1,12 +1,16 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ShieldCheck, Link2, PlusCircle, FileText, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data
 const linkedInsurances = [
@@ -27,20 +31,61 @@ export default function InsurancePage() {
   const [selectedProvider, setSelectedProvider] = useState('');
   const [policyNumber, setPolicyNumber] = useState('');
   const [memberId, setMemberId] = useState('');
+  const { isAuthenticated, mounted: authMounted } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [clientMounted, setClientMounted] = useState(false);
 
+  useEffect(() => {
+    setClientMounted(true);
+  }, []);
+
+
+  const handleStartLinkNew = () => {
+    if (!authMounted) return;
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to link an insurance plan.',
+        variant: 'destructive',
+      });
+      router.push('/auth/login?redirect=/insurance');
+      return;
+    }
+    setIsLinkingNew(true);
+  };
+  
   const handleLinkInsurance = () => {
+     if (!authMounted) return;
+    if (!isAuthenticated) { // Double check, though covered by handleStartLinkNew
+      router.push('/auth/login?redirect=/insurance');
+      return;
+    }
+
     if (selectedProvider && policyNumber && memberId) {
-      // Implement linking logic here
-      alert(`Linking insurance from ${selectedProvider} with policy ${policyNumber} and member ID ${memberId}.`);
+      toast({
+        title: 'Insurance Linked Successfully!',
+        description: `Insurance from ${selectedProvider} with policy ${policyNumber} has been linked.`,
+      });
+      console.log(`Linking insurance from ${selectedProvider} with policy ${policyNumber} and member ID ${memberId}.`);
       // Add to linkedInsurances list (mock) and reset form
       setIsLinkingNew(false);
       setSelectedProvider('');
       setPolicyNumber('');
       setMemberId('');
     } else {
-      alert('Please fill in all fields.');
+       toast({
+        title: 'Missing Information',
+        description: 'Please fill in all fields to link your insurance.',
+        variant: 'destructive',
+      });
     }
   };
+
+  if (!clientMounted) {
+    return <div>Loading page...</div>; // Or a skeleton loader
+  }
+
 
   return (
     <div className="space-y-8">
@@ -55,7 +100,7 @@ export default function InsurancePage() {
           <CardTitle className="flex items-center justify-between">
             <span>Your Linked Insurance Plans</span>
             {!isLinkingNew && (
-                 <Button onClick={() => setIsLinkingNew(true)} size="sm">
+                 <Button onClick={handleStartLinkNew} size="sm">
                     <PlusCircle className="mr-2 h-4 w-4" /> Link New Plan
                 </Button>
             )}

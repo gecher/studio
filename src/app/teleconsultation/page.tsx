@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,9 @@ import { Video, CalendarDays, Clock, Search, MessageCircle, Star } from 'lucide-
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label'; 
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 // Placeholder UserMdIcon (FontAwesome style)
 const CustomUserMdIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -37,21 +40,56 @@ export default function TeleconsultationPage() {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('All');
+  const { isAuthenticated, mounted: authMounted } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [clientMounted, setClientMounted] = useState(false);
+
+  useEffect(() => {
+    setClientMounted(true);
+  }, []);
 
   const availableTimeSlots = ['09:00 AM - 09:30 AM', '11:00 AM - 11:30 AM', '03:00 PM - 03:30 PM', '05:00 PM - 05:30 PM'];
 
   const handleBookAppointment = (doctor: any) => {
+    if (!authMounted) return;
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to book an appointment.',
+        variant: 'destructive',
+      });
+      router.push('/auth/login?redirect=/teleconsultation');
+      return;
+    }
     setSelectedDoctor(doctor);
-    // Scroll or show modal for booking
   };
 
   const handleConfirmBooking = () => {
+    if (!authMounted) return;
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to confirm your appointment.',
+        variant: 'destructive',
+      });
+      router.push('/auth/login?redirect=/teleconsultation');
+      return;
+    }
+
     if (selectedDoctor && selectedDate && selectedTimeSlot) {
-      // Implement booking logic here
-      alert(`Appointment booked with ${selectedDoctor.name} on ${format(selectedDate, 'PPP')} at ${selectedTimeSlot}`);
+      toast({
+        title: 'Appointment Booked!',
+        description: `Your appointment with ${selectedDoctor.name} on ${format(selectedDate, 'PPP')} at ${selectedTimeSlot} is confirmed.`,
+      });
+      console.log(`Appointment booked with ${selectedDoctor.name} on ${format(selectedDate, 'PPP')} at ${selectedTimeSlot}`);
       setSelectedDoctor(null); // Reset
     } else {
-      alert('Please select a doctor, date, and time slot.');
+       toast({
+        title: 'Missing Information',
+        description: 'Please select a doctor, date, and time slot.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -59,6 +97,11 @@ export default function TeleconsultationPage() {
     (doc.name.toLowerCase().includes(searchQuery.toLowerCase()) || doc.specialty.toLowerCase().includes(searchQuery.toLowerCase())) &&
     (selectedSpecialty === 'All' || doc.specialty === selectedSpecialty)
   );
+  
+  if (!clientMounted) {
+    return <div>Loading page...</div>; // Or a skeleton loader
+  }
+
 
   return (
     <div className="space-y-8">
@@ -242,4 +285,3 @@ export default function TeleconsultationPage() {
     </div>
   );
 }
-

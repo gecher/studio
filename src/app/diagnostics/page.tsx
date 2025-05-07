@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,9 @@ import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
 import Image from 'next/image';
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data
 const popularTests = [
@@ -32,26 +36,68 @@ export default function DiagnosticsPage() {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>();
   const [selectedTestOrPackage, setSelectedTestOrPackage] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const { isAuthenticated, mounted: authMounted } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [clientMounted, setClientMounted] = useState(false);
+
+  useEffect(() => {
+    setClientMounted(true);
+  }, []);
+
 
   const availableTimeSlots = ['08:00 AM - 09:00 AM', '10:00 AM - 11:00 AM', '02:00 PM - 03:00 PM', '04:00 PM - 05:00 PM'];
 
   const handleBookTest = (item: any) => {
+    if (!authMounted) return; // Wait for auth context to be ready
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to book a diagnostic test.',
+        variant: 'destructive',
+      });
+      router.push('/auth/login?redirect=/diagnostics');
+      return;
+    }
     setSelectedTestOrPackage(item);
     // Scroll to booking section or open modal
   };
 
   const handleConfirmBooking = () => {
+    if (!authMounted) return; // Wait for auth context to be ready
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to confirm your booking.',
+        variant: 'destructive',
+      });
+      router.push('/auth/login?redirect=/diagnostics');
+      return;
+    }
+
     if (selectedTestOrPackage && selectedDate && selectedTimeSlot) {
       // Implement booking logic here
-      alert(`Booking confirmed for ${selectedTestOrPackage.name} on ${format(selectedDate, 'PPP')} at ${selectedTimeSlot}`);
+      toast({
+        title: 'Booking Confirmed!',
+        description: `Your booking for ${selectedTestOrPackage.name} on ${format(selectedDate, 'PPP')} at ${selectedTimeSlot} is confirmed.`,
+      });
+      console.log(`Booking confirmed for ${selectedTestOrPackage.name} on ${format(selectedDate, 'PPP')} at ${selectedTimeSlot}`);
       setSelectedTestOrPackage(null); // Reset after booking
     } else {
-      alert('Please select a test/package, date, and time slot.');
+      toast({
+        title: 'Missing Information',
+        description: 'Please select a test/package, date, and time slot.',
+        variant: 'destructive',
+      });
     }
   };
   
   const filteredTests = popularTests.filter(test => test.name.toLowerCase().includes(searchQuery.toLowerCase()));
   const filteredPackages = healthPackages.filter(pkg => pkg.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  if (!clientMounted) {
+    return <div>Loading page...</div>; // Or a skeleton loader
+  }
 
   return (
     <div className="space-y-8">
