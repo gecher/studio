@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'; 
-import { PlusCircle, Save, X } from 'lucide-react';
+import { PlusCircle, Save, X, Eye, EyeOff } from 'lucide-react'; // Added Eye, EyeOff
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,7 @@ import AdminHeader from '@/app/admin/_components/admin-header';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox'; 
 import type { User } from '@/app/admin/_types'; 
-import { mockUsers } from '@/app/admin/_lib/mock-data'; // Import mockUsers to add new user
+import { mockUsers } from '@/app/admin/_lib/mock-data';
 
 const NO_PROVIDER_SELECTED_VALUE = "NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER"; 
 
@@ -29,7 +29,7 @@ const userSchema = z.object({
   role: z.enum(['admin', 'pharmacist', 'customer', 'doctor', 'partner']),
   status: z.enum(['active', 'suspended', 'pending_verification']).default('pending_verification'),
   accountType: z.enum(['basic', 'easymeds_plus']).default('basic'),
-  insuranceProvider: z.enum(['Nyala Insurance', 'CBHI', 'Other', NO_PROVIDER_SELECTED_VALUE]).optional(),
+  insuranceProvider: z.enum(['Nyala Insurance', 'CBHI', 'Other', NO_PROVIDER_SELECTED_VALUE]).default(NO_PROVIDER_SELECTED_VALUE).optional(),
   insurancePolicyNumber: z.string().optional(),
   insuranceVerified: z.boolean().default(false),
 });
@@ -50,6 +50,9 @@ export default function AddUserPage() {
     }
   });
 
+  const [showPassword, setShowPassword] = React.useState(false);
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
   const selectedRole = watch('role');
   
   React.useEffect(() => {
@@ -68,9 +71,9 @@ export default function AddUserPage() {
   const onSubmit: SubmitHandler<UserFormData> = async (formData) => {
     const { insuranceProvider, ...restData } = formData;
     
-    let finalInsuranceProvider: User['insuranceProvider'] = null; // Default to null for non-customers or if 'None' is selected
+    let finalInsuranceProvider: User['insuranceProvider'] = null; 
     if (selectedRole === 'customer' && insuranceProvider && insuranceProvider !== NO_PROVIDER_SELECTED_VALUE) {
-      finalInsuranceProvider = insuranceProvider as 'Nyala Insurance' | 'CBHI' | 'Other';
+      finalInsuranceProvider = insuranceProvider as User['insuranceProvider'];
     }
 
     const newUserForStorage: User = {
@@ -78,13 +81,11 @@ export default function AddUserPage() {
       id: `usr_${Date.now()}`, 
       dateJoined: new Date().toISOString().split('T')[0],
       insuranceProvider: finalInsuranceProvider,
-      // For mock purposes, we don't store the actual password in the User object in mockUsers
-      // but it's available in formData.password if needed for an API call.
-      // Omitting password from newUserForStorage to align with User type not having password.
-    } as Omit<User, 'password'> as User; // Ensure User type is matched
+      password: formData.password, // Store password for mock purposes
+    } as User; 
 
     console.log('New user data:', newUserForStorage);
-    mockUsers.push(newUserForStorage); // Add to mock data store
+    mockUsers.push(newUserForStorage); 
     
     await new Promise(resolve => setTimeout(resolve, 1000));
     toast({
@@ -120,7 +121,24 @@ export default function AddUserPage() {
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" {...register('password')} />
+              <div className="relative">
+                <Input 
+                  id="password" 
+                  type={showPassword ? 'text' : 'password'} 
+                  {...register('password')} 
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:bg-transparent"
+                  onClick={togglePasswordVisibility}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
               {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

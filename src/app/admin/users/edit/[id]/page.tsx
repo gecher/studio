@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { Save, X, Trash2 } from 'lucide-react';
+import { Save, X, Trash2, Eye, EyeOff } from 'lucide-react'; // Added Eye, EyeOff
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import AdminHeader from '@/app/admin/_components/admin-header';
 import { useToast } from '@/hooks/use-toast';
-import { mockUsers } from '@/app/admin/_lib/mock-data';
+import { mockUsers, MOCK_ADMIN_USER } from '@/app/admin/_lib/mock-data'; // Added MOCK_ADMIN_USER
 import type { User } from '@/app/admin/_types';
 import {
   AlertDialog,
@@ -39,10 +39,10 @@ const userEditSchema = z.object({
   role: z.enum(['admin', 'pharmacist', 'customer', 'doctor', 'partner']),
   status: z.enum(['active', 'suspended', 'pending_verification']),
   accountType: z.enum(['basic', 'easymeds_plus']).default('basic'),
-  insuranceProvider: z.enum(['Nyala Insurance', 'CBHI', 'Other', NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER]).optional(),
+  insuranceProvider: z.enum(['Nyala Insurance', 'CBHI', 'Other', NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER]).default(NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER).optional(),
   insurancePolicyNumber: z.string().optional(),
   insuranceVerified: z.boolean().default(false),
-  newPassword: z.string().min(8, { message: "Password must be at least 8 characters." }).optional().or(z.literal('')),
+  newPassword: z.string().min(8, { message: "New password must be at least 8 characters." }).optional().or(z.literal('')),
 });
 
 type UserEditFormData = z.infer<typeof userEditSchema>;
@@ -54,6 +54,8 @@ export default function EditUserPage() {
   const userId = params.id as string;
 
   const [user, setUser] = React.useState<User | null>(null);
+  const [showNewPassword, setShowNewPassword] = React.useState(false);
+  const toggleNewPasswordVisibility = () => setShowNewPassword(!showNewPassword);
   
   const { register, handleSubmit, control, formState: { errors }, reset, watch, setValue } = useForm<UserEditFormData>({
     resolver: zodResolver(userEditSchema),
@@ -108,34 +110,33 @@ export default function EditUserPage() {
 
     let finalInsuranceProvider: User['insuranceProvider'] = null;
     if (selectedRole === 'customer' && insuranceProvider && insuranceProvider !== NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER) {
-      finalInsuranceProvider = insuranceProvider as 'Nyala Insurance' | 'CBHI' | 'Other';
+      finalInsuranceProvider = insuranceProvider as User['insuranceProvider'];
     }
     
-    const dataToSubmit: Partial<Omit<User, 'id' | 'dateJoined' | 'lastLogin'>> & { newPassword?: string } = {
+    const dataToUpdate: Partial<User> & { newPassword?: string } = { // Ensure newPassword can be part of this type
         ...restData,
         insuranceProvider: finalInsuranceProvider,
     };
 
     if (newPassword && newPassword.trim() !== '') {
-        dataToSubmit.newPassword = newPassword;
+        dataToUpdate.password = newPassword; // Use 'password' to match User type, or 'newPassword' if backend expects that
+        dataToUpdate.newPassword = newPassword; // Keep for clarity if used elsewhere or if type needs it
     }
 
-    console.log('Updated user data (transformed for submission):', dataToSubmit);
+    console.log('Updated user data (transformed for submission):', dataToUpdate);
     const userIndex = mockUsers.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
-        // Create an updated user object based on current user and submitted data
         const updatedUser: User = {
-            ...mockUsers[userIndex], // Start with existing user data
-            name: dataToSubmit.name!,
-            email: dataToSubmit.email!,
-            role: dataToSubmit.role!,
-            status: dataToSubmit.status!,
-            accountType: dataToSubmit.accountType!,
-            insuranceProvider: dataToSubmit.insuranceProvider,
-            insurancePolicyNumber: dataToSubmit.insurancePolicyNumber || '', // Ensure empty string if undefined
-            insuranceVerified: dataToSubmit.insuranceVerified || false, // Ensure false if undefined
-            // lastLogin could be updated here if needed
-            // newPassword is not part of User type for storage
+            ...mockUsers[userIndex], 
+            name: dataToUpdate.name!,
+            email: dataToUpdate.email!,
+            role: dataToUpdate.role!,
+            status: dataToUpdate.status!,
+            accountType: dataToUpdate.accountType!,
+            insuranceProvider: dataToUpdate.insuranceProvider,
+            insurancePolicyNumber: dataToUpdate.insurancePolicyNumber || '', 
+            insuranceVerified: dataToUpdate.insuranceVerified || false,
+            ...(dataToUpdate.password && { password: dataToUpdate.password }), // Conditionally add password
         };
         mockUsers[userIndex] = updatedUser;
     }
@@ -261,7 +262,25 @@ export default function EditUserPage() {
             )}
              <div>
               <Label htmlFor="newPassword">New Password (optional)</Label>
-              <Input id="newPassword" type="password" {...register('newPassword')} placeholder="Leave blank to keep current password" />
+              <div className="relative">
+                <Input 
+                  id="newPassword" 
+                  type={showNewPassword ? 'text' : 'password'} 
+                  {...register('newPassword')} 
+                  placeholder="Leave blank to keep current password" 
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:bg-transparent"
+                  onClick={toggleNewPasswordVisibility}
+                  aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                >
+                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
               {errors.newPassword && <p className="text-sm text-destructive mt-1">{errors.newPassword.message}</p>}
             </div>
 
