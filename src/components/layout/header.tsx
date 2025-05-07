@@ -7,10 +7,10 @@ import { Input } from '@/components/ui/input';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import LanguageToggle from '@/components/language-toggle';
 import { SheetTrigger, Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import CartPageContent from '@/components/cart/cart-content';
+import CartPageContent, { type CartPageContentProps } from '@/components/cart/cart-content';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context'; 
-import { useCart } from '@/contexts/cart-context'; // Import useCart
+import { useCart } from '@/contexts/cart-context';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,8 +25,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export default function Header() {
   const { isMobile } = useSidebar();
   const { isAuthenticated, currentUser, logout, mounted: authMounted } = useAuth(); 
-  const { totalItems, mounted: cartMounted } = useCart(); // Get totalItems from cart context
+  const { totalItems, mounted: cartMounted } = useCart();
   const [mounted, setMounted] = useState(false);
+  const [isCartSheetOpen, setIsCartSheetOpen] = useState(false);
   
   useEffect(() => { 
     setMounted(true); 
@@ -42,7 +43,7 @@ export default function Header() {
   };
 
   const renderCartButton = () => {
-    if (!mounted || !cartMounted) { // Wait for both general mount and cart mount
+    if (!mounted || !cartMounted) {
       return (
         <Button variant="ghost" size="icon" className="relative" disabled>
           <ShoppingCart className="h-5 w-5" />
@@ -51,7 +52,7 @@ export default function Header() {
       );
     }
     return (
-      <Sheet>
+      <Sheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="relative">
             <ShoppingCart className="h-5 w-5" />
@@ -73,7 +74,7 @@ export default function Header() {
               Review items in your cart and proceed to checkout.
             </SheetDescription>
           </SheetHeader>
-          <CartPageContent />
+          <CartPageContent onCheckout={() => setIsCartSheetOpen(false)} />
         </SheetContent>
       </Sheet>
     );
@@ -95,7 +96,7 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={`https://picsum.photos/seed/${currentUser.id}/40`} alt={currentUser.name} data-ai-hint="user avatar small"/>
+                <AvatarImage src={currentUser.avatarUrl || `https://picsum.photos/seed/${currentUser.id}/40`} alt={currentUser.name} data-ai-hint="user avatar small"/>
                 <AvatarFallback>{currentUser.name.split(" ").map(n => n[0]).join("").toUpperCase()}</AvatarFallback>
               </Avatar>
             </Button>
@@ -115,6 +116,14 @@ export default function Header() {
                 <UserCircle2 className="h-4 w-4"/> Profile
               </Link>
             </DropdownMenuItem>
+             {currentUser.role === 'admin' && (
+              <DropdownMenuItem asChild>
+                <Link href="/admin" className="flex items-center gap-2 cursor-pointer">
+                  <Settings2 className="h-4 w-4"/> Admin Dashboard
+                </Link>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
               <LogOut className="h-4 w-4" />
               Log out

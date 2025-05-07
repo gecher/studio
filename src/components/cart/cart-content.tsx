@@ -9,29 +9,36 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { useCart } from "@/contexts/cart-context"; // Import useCart
+import { useCart } from "@/contexts/cart-context";
 import { Input } from "@/components/ui/input";
 
-export default function CartPageContent() {
+export interface CartPageContentProps {
+  onCheckout?: () => void;
+}
+
+export default function CartPageContent({ onCheckout }: CartPageContentProps) {
   const { isAuthenticated, mounted: authMounted } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const { cartItems, removeFromCart, updateQuantity, subtotal, mounted: cartMounted } = useCart(); // Use cart context
+  const { cartItems, removeFromCart, updateQuantity, subtotal, mounted: cartMounted } = useCart();
 
-  const deliveryFee = cartItems.length > 0 ? 50 : 0; // Example delivery fee
+  const deliveryFee = cartItems.length > 0 ? 50 : 0;
   const total = subtotal + deliveryFee;
 
   const handleCheckout = () => {
     if (!authMounted) return;
+    
     if (!isAuthenticated) {
       toast({
         title: 'Login Required',
         description: 'Please log in to proceed to checkout.',
         variant: 'destructive',
       });
+      onCheckout?.(); // Close sheet before redirecting
       router.push('/auth/login?redirect=/checkout'); 
       return;
     }
+    onCheckout?.(); // Close sheet before redirecting
     router.push('/checkout'); 
   };
 
@@ -51,7 +58,7 @@ export default function CartPageContent() {
         <h2 className="text-2xl font-semibold mb-2">Your Cart is Empty</h2>
         <p className="text-muted-foreground mb-6">Looks like you haven't added anything to your cart yet.</p>
         <Link href="/order-medicines">
-            <Button size="lg">Start Shopping</Button>
+            <Button size="lg" onClick={() => onCheckout?.()}>Start Shopping</Button>
         </Link>
       </div>
     );
@@ -117,7 +124,7 @@ export default function CartPageContent() {
           Proceed to Checkout
         </Button>
         <Link href="/order-medicines" className="w-full">
-          <Button variant="outline" className="w-full">Continue Shopping</Button>
+          <Button variant="outline" className="w-full" onClick={() => onCheckout?.()}>Continue Shopping</Button>
         </Link>
       </div>
     </>
