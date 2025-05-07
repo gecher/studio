@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -16,19 +15,20 @@ import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { useCart, type CartItem } from '@/contexts/cart-context';
 
 // Mock data
 const popularTests = [
-  { id: 'test1', name: 'Complete Blood Count (CBC)', price: '300 ETB', description: 'Measures different components of your blood.', image: 'https://picsum.photos/seed/bloodtest/400/250', dataAiHint: 'blood test' },
-  { id: 'test2', name: 'Lipid Profile', price: '450 ETB', description: 'Measures cholesterol and triglyceride levels.', image: 'https://picsum.photos/seed/cholesteroltest/400/250', dataAiHint: 'cholesterol test' },
-  { id: 'test3', name: 'Thyroid Function Test (TFT)', price: '600 ETB', description: 'Checks how well your thyroid gland is working.', image: 'https://picsum.photos/seed/thyroidscan/400/250', dataAiHint: 'thyroid scan' },
-  { id: 'test4', name: 'Blood Sugar (Fasting)', price: '150 ETB', description: 'Measures glucose levels after fasting.', image: 'https://picsum.photos/seed/glucosemeter/400/250', dataAiHint: 'glucose meter' },
+  { id: 'test1', name: 'Complete Blood Count (CBC)', price: 300, description: 'Measures different components of your blood.', image: 'https://picsum.photos/seed/bloodtest/400/250', dataAiHint: 'blood test' },
+  { id: 'test2', name: 'Lipid Profile', price: 450, description: 'Measures cholesterol and triglyceride levels.', image: 'https://picsum.photos/seed/cholesteroltest/400/250', dataAiHint: 'cholesterol test' },
+  { id: 'test3', name: 'Thyroid Function Test (TFT)', price: 600, description: 'Checks how well your thyroid gland is working.', image: 'https://picsum.photos/seed/thyroidscan/400/250', dataAiHint: 'thyroid scan' },
+  { id: 'test4', name: 'Blood Sugar (Fasting)', price: 150, description: 'Measures glucose levels after fasting.', image: 'https://picsum.photos/seed/glucosemeter/400/250', dataAiHint: 'glucose meter' },
 ];
 
 const healthPackages = [
-  { id: 'pkg1', name: 'Basic Health Checkup', price: '1200 ETB', tests: ['CBC', 'Lipid Profile', 'Blood Sugar'], description: 'Essential tests for a general health overview.', image: 'https://picsum.photos/seed/healthpackage/400/250', dataAiHint: 'health package' },
-  { id: 'pkg2', name: 'Advanced Cardiac Profile', price: '2500 ETB', tests: ['Lipid Profile', 'ECG', 'Troponin-I'], description: 'Comprehensive heart health assessment.', image: 'https://picsum.photos/seed/heartcheckup/400/250', dataAiHint: 'heart checkup' },
-  { id: 'pkg3', name: 'Diabetes Care Package', price: '1800 ETB', tests: ['Blood Sugar (Fasting & PP)', 'HbA1c', 'Kidney Function Test'], description: 'Monitor and manage diabetes effectively.', image: 'https://picsum.photos/seed/diabetescare/400/250', dataAiHint: 'diabetes care' },
+  { id: 'pkg1', name: 'Basic Health Checkup', price: 1200, tests: ['CBC', 'Lipid Profile', 'Blood Sugar'], description: 'Essential tests for a general health overview.', image: 'https://picsum.photos/seed/healthpackage/400/250', dataAiHint: 'health package' },
+  { id: 'pkg2', name: 'Advanced Cardiac Profile', price: 2500, tests: ['Lipid Profile', 'ECG', 'Troponin-I'], description: 'Comprehensive heart health assessment.', image: 'https://picsum.photos/seed/heartcheckup/400/250', dataAiHint: 'heart checkup' },
+  { id: 'pkg3', name: 'Diabetes Care Package', price: 1800, tests: ['Blood Sugar (Fasting & PP)', 'HbA1c', 'Kidney Function Test'], description: 'Monitor and manage diabetes effectively.', image: 'https://picsum.photos/seed/diabetescare/400/250', dataAiHint: 'diabetes care' },
 ];
 
 export default function DiagnosticsPage() {
@@ -40,6 +40,7 @@ export default function DiagnosticsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [clientMounted, setClientMounted] = useState(false);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     setClientMounted(true);
@@ -49,7 +50,7 @@ export default function DiagnosticsPage() {
   const availableTimeSlots = ['08:00 AM - 09:00 AM', '10:00 AM - 11:00 AM', '02:00 PM - 03:00 PM', '04:00 PM - 05:00 PM'];
 
   const handleBookTest = (item: any) => {
-    if (!authMounted) return; // Wait for auth context to be ready
+    if (!authMounted) return; 
     if (!isAuthenticated) {
       toast({
         title: 'Login Required',
@@ -60,11 +61,10 @@ export default function DiagnosticsPage() {
       return;
     }
     setSelectedTestOrPackage(item);
-    // Scroll to booking section or open modal
   };
 
   const handleConfirmBooking = () => {
-    if (!authMounted) return; // Wait for auth context to be ready
+    if (!authMounted) return;
     if (!isAuthenticated) {
       toast({
         title: 'Login Required',
@@ -76,13 +76,25 @@ export default function DiagnosticsPage() {
     }
 
     if (selectedTestOrPackage && selectedDate && selectedTimeSlot) {
-      // Implement booking logic here
+      const cartItem: Omit<CartItem, 'quantity'> = {
+        id: selectedTestOrPackage.id,
+        name: selectedTestOrPackage.name,
+        price: selectedTestOrPackage.price,
+        image: selectedTestOrPackage.image,
+        dataAiHint: selectedTestOrPackage.dataAiHint,
+        type: 'test',
+        testDetails: selectedTestOrPackage.description,
+        slotDetails: `Date: ${format(selectedDate, 'PPP')}, Time: ${selectedTimeSlot}`
+      };
+      addToCart(cartItem, 1);
       toast({
-        title: 'Booking Confirmed!',
-        description: `Your booking for ${selectedTestOrPackage.name} on ${format(selectedDate, 'PPP')} at ${selectedTimeSlot} is confirmed.`,
+        title: 'Test Added to Cart!',
+        description: `${selectedTestOrPackage.name} has been added to your cart for booking.`,
       });
-      console.log(`Booking confirmed for ${selectedTestOrPackage.name} on ${format(selectedDate, 'PPP')} at ${selectedTimeSlot}`);
-      setSelectedTestOrPackage(null); // Reset after booking
+      setSelectedTestOrPackage(null); // Reset after adding to cart
+      setSelectedDate(new Date());
+      setSelectedTimeSlot(undefined);
+      // router.push('/checkout'); // Optionally redirect to checkout
     } else {
       toast({
         title: 'Missing Information',
@@ -96,7 +108,7 @@ export default function DiagnosticsPage() {
   const filteredPackages = healthPackages.filter(pkg => pkg.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   if (!clientMounted) {
-    return <div>Loading page...</div>; // Or a skeleton loader
+    return <div>Loading page...</div>; 
   }
 
   return (
@@ -117,7 +129,6 @@ export default function DiagnosticsPage() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
       </div>
 
-      {/* Popular Tests Section */}
       <section>
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2"><Microscope className="text-primary"/> Popular Tests</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -137,7 +148,7 @@ export default function DiagnosticsPage() {
                 <CardDescription>{test.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="text-lg font-semibold text-foreground">{test.price}</p>
+                <p className="text-lg font-semibold text-foreground">{test.price.toFixed(2)} ETB</p>
               </CardContent>
               <CardFooter>
                 <Button className="w-full bg-primary hover:bg-primary/90" onClick={() => handleBookTest(test)}>
@@ -150,7 +161,6 @@ export default function DiagnosticsPage() {
          {filteredTests.length === 0 && searchQuery && <p className="text-muted-foreground text-center py-4">No tests found for "{searchQuery}".</p>}
       </section>
 
-      {/* Health Packages Section */}
       <section>
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2"><Package className="text-primary"/> Health Packages</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -171,7 +181,7 @@ export default function DiagnosticsPage() {
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground mb-2">Includes: {pkg.tests.join(', ')}</p>
-                <p className="text-lg font-semibold text-foreground">{pkg.price}</p>
+                <p className="text-lg font-semibold text-foreground">{pkg.price.toFixed(2)} ETB</p>
               </CardContent>
               <CardFooter>
                 <Button className="w-full bg-primary hover:bg-primary/90" onClick={() => handleBookTest(pkg)}>
@@ -184,7 +194,6 @@ export default function DiagnosticsPage() {
         {filteredPackages.length === 0 && searchQuery && <p className="text-muted-foreground text-center py-4">No packages found for "{searchQuery}".</p>}
       </section>
 
-      {/* Booking Details Section */}
       {selectedTestOrPackage && (
         <Card className="shadow-lg sticky bottom-4 z-10 md:static">
           <CardHeader>
@@ -213,7 +222,7 @@ export default function DiagnosticsPage() {
                       selected={selectedDate}
                       onSelect={setSelectedDate}
                       initialFocus
-                      disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() -1)) } // Disable past dates
+                      disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() -1)) } 
                     />
                   </PopoverContent>
                 </Popover>
@@ -242,7 +251,7 @@ export default function DiagnosticsPage() {
           </CardContent>
           <CardFooter className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setSelectedTestOrPackage(null)}>Cancel</Button>
-            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleConfirmBooking}>Confirm Booking</Button>
+            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleConfirmBooking}>Add to Cart & Proceed</Button>
           </CardFooter>
         </Card>
       )}

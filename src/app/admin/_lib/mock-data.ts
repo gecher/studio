@@ -1,4 +1,3 @@
-
 import type { 
   User, Product, Batch, Order, DiagnosticBooking, LabPartner, 
   TeleconsultationAppointment, DoctorProfile, InsurancePolicy, InsuranceClaim,
@@ -6,6 +5,7 @@ import type {
   GeneralSetting, SecurityLog, PaymentGatewaySetting, OrderItem
 } from '../_types';
 import { format } from 'date-fns';
+import type { CartItem } from '@/contexts/cart-context'; // Import CartItem type
 
 const today = new Date();
 const formatDate = (date: Date) => format(date, 'yyyy-MM-dd');
@@ -32,18 +32,18 @@ export const mockBatches: Batch[] = [
   { id: 'batch_004', productId: 'prod_003', productName: 'Vitamin C 1000mg', batchNumber: 'VC001', expiryDate: formatDate(new Date(2023, 10, 1)), quantity: 8, status: 'expired' },
 ];
 
-export const mockOrders: Order[] = [
+export let mockOrders: Order[] = [
   { id: 'ord_001', customerName: 'Abebe Bikila', orderDate: formatDate(new Date(2024, 0, 20)), totalAmount: 210, status: 'Delivered', paymentStatus: 'Paid' },
   { id: 'ord_002', customerName: 'Tirunesh Dibaba', orderDate: formatDate(new Date(2024, 0, 22)), totalAmount: 150, status: 'Pending', paymentStatus: 'Unpaid' },
   { id: 'ord_003', customerName: 'Abebe Bikila', orderDate: formatDate(new Date(2024, 0, 15)), totalAmount: 500, status: 'Shipped', paymentStatus: 'Paid' },
   { id: 'ord_004', customerName: 'Guest User', orderDate: formatDate(new Date(2023, 11, 30)), totalAmount: 80, status: 'Cancelled', paymentStatus: 'Pending Refund' },
 ];
 
-export const mockOrderItems: Record<string, OrderItem[]> = {
+export let mockOrderItems: Record<string, OrderItem[]> = {
   'ord_001': [
     { id: 'oi_001', productId: 'prod_001', productName: 'Amoxicillin 250mg', quantity: 1, unitPrice: 80, totalPrice: 80},
     { id: 'oi_002', productId: 'prod_002', productName: 'Paracetamol 500mg', quantity: 2, unitPrice: 50, totalPrice: 100},
-    { id: 'oi_003', productId: 'prod_003', productName: 'Vitamin C 1000mg', quantity: 1, unitPrice: 30, totalPrice: 30}, // Assuming price changed for this order
+    { id: 'oi_003', productId: 'prod_003', productName: 'Vitamin C 1000mg', quantity: 1, unitPrice: 30, totalPrice: 30}, 
   ],
   'ord_002': [
     { id: 'oi_004', productId: 'prod_002', productName: 'Paracetamol 500mg', quantity: 3, unitPrice: 50, totalPrice: 150},
@@ -55,6 +55,43 @@ export const mockOrderItems: Record<string, OrderItem[]> = {
     { id: 'oi_006', productId: 'prod_001', productName: 'Amoxicillin 250mg', quantity: 1, unitPrice: 80, totalPrice: 80},
   ],
 };
+
+export async function createMockOrder(
+  cartItems: CartItem[],
+  customerDetails: { name: string; email: string; phone: string; address: string },
+  paymentMethod: 'cod' | 'online',
+  totalAmount: number
+): Promise<string> {
+  return new Promise((resolve) => {
+    setTimeout(() => { // Simulate async operation
+      const newOrderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      
+      const newOrder: Order = {
+        id: newOrderId,
+        customerName: customerDetails.name, // Link to customer or store details directly
+        orderDate: formatDate(new Date()),
+        totalAmount: totalAmount,
+        status: 'Pending', // Initial status
+        paymentStatus: paymentMethod === 'cod' ? 'Unpaid' : 'Paid', // Simulate online payment as 'Paid'
+      };
+      mockOrders.push(newOrder);
+
+      const newOrderItemsList: OrderItem[] = cartItems.map((cartItem, index) => ({
+        id: `oi_${newOrderId}_${index}`,
+        productId: cartItem.id,
+        productName: cartItem.name,
+        quantity: cartItem.quantity,
+        unitPrice: cartItem.price,
+        totalPrice: cartItem.price * cartItem.quantity,
+      }));
+      mockOrderItems[newOrderId] = newOrderItemsList;
+      
+      console.log("New order created in mock data:", newOrder);
+      console.log("New order items:", newOrderItemsList);
+      resolve(newOrderId);
+    }, 500); // Simulate network delay
+  });
+}
 
 
 export const mockDiagnosticBookings: DiagnosticBooking[] = [
@@ -98,7 +135,7 @@ export const mockContentItems: ContentItem[] = [
   { id: 'cont_001', title: 'Understanding Diabetes', type: 'article', category: 'Chronic Diseases', language: 'english', status: 'published', publishDate: formatDate(new Date(2023, 6, 15)), author: 'Dr. Haile' },
   { id: 'cont_002', title: 'የስኳር በሽታን መረዳት', type: 'article', category: 'Chronic Diseases', language: 'amharic', status: 'published', publishDate: formatDate(new Date(2023, 6, 15)), author: 'ዶ/ር ኃይሌ' },
   { id: 'cont_003', title: 'Healthy Eating Video', type: 'video', category: 'Nutrition', language: 'english', status: 'draft', publishDate: formatDate(new Date(2023, 7, 1)) },
-  { id: 'cont_004', title: 'FAQ: Common Cold', type: 'faq', category: 'General Health', language: 'both', status: 'published', publishDate: formatDate(new Date(2023, 5, 10)) },
+  { id: 'cont_004', title: 'FAQ: Common Cold', type: 'faq', category: 'General Health', language: 'english', status: 'published', publishDate: formatDate(new Date(2023, 5, 10)) },
 ];
 
 export const mockLocations: Location[] = [

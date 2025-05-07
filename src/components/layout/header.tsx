@@ -1,9 +1,7 @@
-
 'use client';
 
 import Link from 'next/link';
 import { Menu, Search, ShoppingCart, UserCircle2, LogIn, LogOut } from 'lucide-react';
-import type { ButtonProps } from '@/components/ui/button';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
@@ -11,8 +9,8 @@ import LanguageToggle from '@/components/language-toggle';
 import { SheetTrigger, Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import CartPageContent from '@/components/cart/cart-content';
 import { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/auth-context'; // Import useAuth
+import { useAuth } from '@/contexts/auth-context'; 
+import { useCart } from '@/contexts/cart-context'; // Import useCart
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +24,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Header() {
   const { isMobile } = useSidebar();
-  const { isAuthenticated, currentUser, logout, mounted: authMounted } = useAuth(); // Use auth context
+  const { isAuthenticated, currentUser, logout, mounted: authMounted } = useAuth(); 
+  const { totalItems, mounted: cartMounted } = useCart(); // Get totalItems from cart context
   const [mounted, setMounted] = useState(false);
   
   useEffect(() => { 
@@ -35,19 +34,15 @@ export default function Header() {
 
   const handleLogout = () => {
     logout();
-    // Optionally, redirect to login or home page after logout
-    // router.push('/auth/login');
   };
 
-
-  // Render placeholder or actual component based on mounted state
   const renderLanguageToggle = () => {
     if (!mounted) return <div className="h-10 w-10" aria-hidden="true" />;
     return <LanguageToggle />;
   };
 
   const renderCartButton = () => {
-    if (!mounted) {
+    if (!mounted || !cartMounted) { // Wait for both general mount and cart mount
       return (
         <Button variant="ghost" size="icon" className="relative" disabled>
           <ShoppingCart className="h-5 w-5" />
@@ -61,6 +56,11 @@ export default function Header() {
           <Button variant="ghost" size="icon" className="relative">
             <ShoppingCart className="h-5 w-5" />
             <span className="sr-only">Open Cart</span>
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">
+                {totalItems}
+              </span>
+            )}
           </Button>
         </SheetTrigger>
         <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0 data-[state=open]:shadow-2xl">
@@ -80,7 +80,7 @@ export default function Header() {
   };
 
   const renderProfileButton = () => {
-    if (!authMounted) { // Check if auth context is mounted
+    if (!authMounted) { 
          return (
             <Button variant="ghost" size="icon" disabled>
                 <UserCircle2 className="h-5 w-5" />
@@ -95,7 +95,7 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
               <Avatar className="h-9 w-9">
-                <AvatarImage src={`https://picsum.photos/seed/${currentUser.id}/40`} alt={currentUser.name} data-ai-hint="user avatar small" />
+                <AvatarImage src={`https://picsum.photos/seed/${currentUser.id}/40`} alt={currentUser.name} data-ai-hint="user avatar small"/>
                 <AvatarFallback>{currentUser.name.split(" ").map(n => n[0]).join("").toUpperCase()}</AvatarFallback>
               </Avatar>
             </Button>
@@ -136,12 +136,22 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 shadow-sm">
-      <SidebarTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Menu className="h-6 w-6" />
-          <span className="sr-only">Toggle Sidebar</span>
-        </Button>
-      </SidebarTrigger>
+      {isMobile && (
+        <SidebarTrigger asChild>
+            <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle Sidebar</span>
+            </Button>
+        </SidebarTrigger>
+      )}
+      {!isMobile && (
+           <SidebarTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Toggle Sidebar</span>
+                </Button>
+            </SidebarTrigger>
+      )}
       
       <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
         <PillIcon className="h-7 w-7 text-primary" />
@@ -164,7 +174,6 @@ export default function Header() {
   );
 }
 
-// Custom PillIcon
 function PillIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -184,4 +193,3 @@ function PillIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-
