@@ -1,3 +1,4 @@
+
 import type { 
   User, Product, Batch, Order, DiagnosticBooking, LabPartner, 
   TeleconsultationAppointment, DoctorProfile, InsurancePolicy, InsuranceClaim,
@@ -5,10 +6,63 @@ import type {
   GeneralSetting, SecurityLog, PaymentGatewaySetting, OrderItem
 } from '../_types';
 import { format } from 'date-fns';
-import type { CartItem } from '@/contexts/cart-context'; // Import CartItem type
+import type { CartItem } from '@/contexts/cart-context';
 
 const today = new Date();
 const formatDate = (date: Date) => format(date, 'yyyy-MM-dd');
+
+// --- HMR-Proof Store for mutable mock data ---
+declare global {
+  interface Window {
+    __MOCK_DATA_STORE__?: {
+      orders: Order[];
+      orderItems: Record<string, OrderItem[]>;
+    };
+  }
+}
+
+const _initialMockOrdersData: Order[] = [
+  { id: 'ord_001', customerName: 'Abebe Bikila', orderDate: formatDate(new Date(2024, 0, 20)), totalAmount: 210, status: 'Delivered', paymentStatus: 'Paid' },
+  { id: 'ord_002', customerName: 'Tirunesh Dibaba', orderDate: formatDate(new Date(2024, 0, 22)), totalAmount: 150, status: 'Pending', paymentStatus: 'Unpaid' },
+  { id: 'ord_003', customerName: 'Abebe Bikila', orderDate: formatDate(new Date(2024, 0, 15)), totalAmount: 500, status: 'Shipped', paymentStatus: 'Paid' },
+  { id: 'ord_004', customerName: 'Guest User', orderDate: formatDate(new Date(2023, 11, 30)), totalAmount: 80, status: 'Cancelled', paymentStatus: 'Pending Refund' },
+];
+
+const _initialMockOrderItemsData: Record<string, OrderItem[]> = {
+  'ord_001': [
+    { id: 'oi_001', productId: 'prod_001', productName: 'Amoxicillin 250mg', quantity: 1, unitPrice: 80, totalPrice: 80},
+    { id: 'oi_002', productId: 'prod_002', productName: 'Paracetamol 500mg', quantity: 2, unitPrice: 50, totalPrice: 100},
+    { id: 'oi_003', productId: 'prod_003', productName: 'Vitamin C 1000mg', quantity: 1, unitPrice: 30, totalPrice: 30}, 
+  ],
+  'ord_002': [
+    { id: 'oi_004', productId: 'prod_002', productName: 'Paracetamol 500mg', quantity: 3, unitPrice: 50, totalPrice: 150},
+  ],
+   'ord_003': [
+    { id: 'oi_005', productId: 'prod_004', productName: 'Digital Thermometer', quantity: 2, unitPrice: 250, totalPrice: 500},
+  ],
+   'ord_004': [
+    { id: 'oi_006', productId: 'prod_001', productName: 'Amoxicillin 250mg', quantity: 1, unitPrice: 80, totalPrice: 80},
+  ],
+};
+
+if (typeof window !== 'undefined') {
+  if (!window.__MOCK_DATA_STORE__) {
+    window.__MOCK_DATA_STORE__ = {
+      orders: [..._initialMockOrdersData], 
+      orderItems: JSON.parse(JSON.stringify(_initialMockOrderItemsData)),
+    };
+  }
+}
+
+export const mockOrders: Order[] = typeof window !== 'undefined' 
+  ? window.__MOCK_DATA_STORE__!.orders 
+  : [..._initialMockOrdersData];
+
+export const mockOrderItems: Record<string, OrderItem[]> = typeof window !== 'undefined' 
+  ? window.__MOCK_DATA_STORE__!.orderItems 
+  : JSON.parse(JSON.stringify(_initialMockOrderItemsData));
+// --- End HMR-Proof Store ---
+
 
 export const mockUsers: User[] = [
   { id: 'usr_001', name: 'Abebe Bikila', email: 'abebe@example.com', role: 'customer', status: 'active', dateJoined: formatDate(new Date(2023, 0, 15)), lastLogin: formatDate(today), insuranceProvider: 'Nyala Insurance', insurancePolicyNumber: 'NYL-12345', insuranceVerified: true },
@@ -32,30 +86,6 @@ export const mockBatches: Batch[] = [
   { id: 'batch_004', productId: 'prod_003', productName: 'Vitamin C 1000mg', batchNumber: 'VC001', expiryDate: formatDate(new Date(2023, 10, 1)), quantity: 8, status: 'expired' },
 ];
 
-export let mockOrders: Order[] = [
-  { id: 'ord_001', customerName: 'Abebe Bikila', orderDate: formatDate(new Date(2024, 0, 20)), totalAmount: 210, status: 'Delivered', paymentStatus: 'Paid' },
-  { id: 'ord_002', customerName: 'Tirunesh Dibaba', orderDate: formatDate(new Date(2024, 0, 22)), totalAmount: 150, status: 'Pending', paymentStatus: 'Unpaid' },
-  { id: 'ord_003', customerName: 'Abebe Bikila', orderDate: formatDate(new Date(2024, 0, 15)), totalAmount: 500, status: 'Shipped', paymentStatus: 'Paid' },
-  { id: 'ord_004', customerName: 'Guest User', orderDate: formatDate(new Date(2023, 11, 30)), totalAmount: 80, status: 'Cancelled', paymentStatus: 'Pending Refund' },
-];
-
-export let mockOrderItems: Record<string, OrderItem[]> = {
-  'ord_001': [
-    { id: 'oi_001', productId: 'prod_001', productName: 'Amoxicillin 250mg', quantity: 1, unitPrice: 80, totalPrice: 80},
-    { id: 'oi_002', productId: 'prod_002', productName: 'Paracetamol 500mg', quantity: 2, unitPrice: 50, totalPrice: 100},
-    { id: 'oi_003', productId: 'prod_003', productName: 'Vitamin C 1000mg', quantity: 1, unitPrice: 30, totalPrice: 30}, 
-  ],
-  'ord_002': [
-    { id: 'oi_004', productId: 'prod_002', productName: 'Paracetamol 500mg', quantity: 3, unitPrice: 50, totalPrice: 150},
-  ],
-   'ord_003': [
-    { id: 'oi_005', productId: 'prod_004', productName: 'Digital Thermometer', quantity: 2, unitPrice: 250, totalPrice: 500},
-  ],
-   'ord_004': [
-    { id: 'oi_006', productId: 'prod_001', productName: 'Amoxicillin 250mg', quantity: 1, unitPrice: 80, totalPrice: 80},
-  ],
-};
-
 export async function createMockOrder(
   cartItems: CartItem[],
   customerDetails: { name: string; email: string; phone: string; address: string },
@@ -63,16 +93,16 @@ export async function createMockOrder(
   totalAmount: number
 ): Promise<string> {
   return new Promise((resolve) => {
-    setTimeout(() => { // Simulate async operation
+    setTimeout(() => { 
       const newOrderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
       
       const newOrder: Order = {
         id: newOrderId,
-        customerName: customerDetails.name, // Link to customer or store details directly
+        customerName: customerDetails.name,
         orderDate: formatDate(new Date()),
         totalAmount: totalAmount,
-        status: 'Pending', // Initial status
-        paymentStatus: paymentMethod === 'cod' ? 'Unpaid' : 'Paid', // Simulate online payment as 'Paid'
+        status: 'Pending', 
+        paymentStatus: paymentMethod === 'cod' ? 'Unpaid' : 'Paid', 
       };
       mockOrders.push(newOrder);
 
@@ -89,7 +119,7 @@ export async function createMockOrder(
       console.log("New order created in mock data:", newOrder);
       console.log("New order items:", newOrderItemsList);
       resolve(newOrderId);
-    }, 500); // Simulate network delay
+    }, 500); 
   });
 }
 
@@ -172,3 +202,5 @@ export const mockPaymentGatewaySettings: PaymentGatewaySetting[] = [
     { id: 'pg_002', name: 'Telebirr', apiKey: 'TELEBIRR_APP_ID_ZZZZZ', secretKey: 'TELEBIRR_SECRET_KEY_AAAAA', isEnabled: false, environment: 'production'},
     { id: 'pg_003', name: 'Stripe', apiKey: 'pk_test_BBBBBBBBBBBBBB', secretKey: 'sk_test_CCCCCCCCCCCCCCCC', isEnabled: true, environment: 'sandbox'},
 ];
+
+    
