@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import GoogleButton from '@/components/ui/google-button';
 import { Pill } from 'lucide-react';
 import { useAuth, MOCK_REGULAR_USER } from '@/contexts/auth-context'; // Import useAuth and MOCK_REGULAR_USER
+import { useState, useEffect } from 'react'; // Import useState and useEffect
 
 const signupSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters.' }),
@@ -38,6 +39,12 @@ export default function SignupPage() {
   } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
   });
+
+  const [clientMounted, setClientMounted] = useState(false);
+
+  useEffect(() => {
+    setClientMounted(true);
+  }, []);
 
   const onSubmit: SubmitHandler<SignupFormValues> = async (data) => {
     // Mock signup
@@ -83,62 +90,97 @@ export default function SignupPage() {
         <CardDescription>Join EasyMeds for a healthier tomorrow.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input
-              id="fullName"
-              placeholder="Enter your full name"
-              {...register('fullName')}
-              aria-invalid={errors.fullName ? "true" : "false"}
-            />
-            {errors.fullName && <p className="text-sm text-destructive mt-1">{errors.fullName.message}</p>}
+        {clientMounted ? (
+          <>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  placeholder="Enter your full name"
+                  {...register('fullName')}
+                  aria-invalid={errors.fullName ? "true" : "false"}
+                />
+                {errors.fullName && <p className="text-sm text-destructive mt-1">{errors.fullName.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  {...register('email')}
+                  aria-invalid={errors.email ? "true" : "false"}
+                />
+                {errors.email && <p className="text-sm text-destructive mt-1">{errors.email.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Create a strong password"
+                  {...register('password')}
+                  aria-invalid={errors.password ? "true" : "false"}
+                />
+                {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  {...register('confirmPassword')}
+                  aria-invalid={errors.confirmPassword ? "true" : "false"}
+                />
+                {errors.confirmPassword && <p className="text-sm text-destructive mt-1">{errors.confirmPassword.message}</p>}
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Creating Account...' : 'Sign Up'}
+              </Button>
+            </form>
+            <div className="my-6 flex items-center">
+              <div className="flex-grow border-t border-border"></div>
+              <span className="mx-4 text-xs text-muted-foreground">OR</span>
+              <div className="flex-grow border-t border-border"></div>
+            </div>
+            <GoogleButton onClick={handleGoogleSignUp} disabled={isSubmitting}>
+              Sign up with Google
+            </GoogleButton>
+          </>
+        ) : (
+          // Placeholder structure for SSR/pre-hydration
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="fullName-placeholder">Full Name</Label>
+              <Input id="fullName-placeholder" placeholder="Enter your full name" disabled />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email-placeholder">Email</Label>
+              <Input id="email-placeholder" type="email" placeholder="you@example.com" disabled />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password-placeholder">Password</Label>
+              <Input id="password-placeholder" type="password" placeholder="Create a strong password" disabled />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword-placeholder">Confirm Password</Label>
+              <Input id="confirmPassword-placeholder" type="password" placeholder="Confirm your password" disabled />
+            </div>
+            <Button type="button" className="w-full" disabled>
+              Sign Up
+            </Button>
+            <div className="my-6 flex items-center">
+              <div className="flex-grow border-t border-border"></div>
+              <span className="mx-4 text-xs text-muted-foreground">OR</span>
+              <div className="flex-grow border-t border-border"></div>
+            </div>
+            <GoogleButton disabled>
+              Sign up with Google
+            </GoogleButton>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              {...register('email')}
-              aria-invalid={errors.email ? "true" : "false"}
-            />
-            {errors.email && <p className="text-sm text-destructive mt-1">{errors.email.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Create a strong password"
-              {...register('password')}
-              aria-invalid={errors.password ? "true" : "false"}
-            />
-            {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              {...register('confirmPassword')}
-              aria-invalid={errors.confirmPassword ? "true" : "false"}
-            />
-            {errors.confirmPassword && <p className="text-sm text-destructive mt-1">{errors.confirmPassword.message}</p>}
-          </div>
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating Account...' : 'Sign Up'}
-          </Button>
-        </form>
-        <div className="my-6 flex items-center">
-          <div className="flex-grow border-t border-border"></div>
-          <span className="mx-4 text-xs text-muted-foreground">OR</span>
-          <div className="flex-grow border-t border-border"></div>
-        </div>
-        <GoogleButton onClick={handleGoogleSignUp} disabled={isSubmitting}>
-          Sign up with Google
-        </GoogleButton>
+        )}
       </CardContent>
       <CardFooter className="justify-center">
         <p className="text-sm text-muted-foreground">
@@ -151,4 +193,3 @@ export default function SignupPage() {
     </Card>
   );
 }
-

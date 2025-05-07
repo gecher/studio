@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Pill, Undo2 } from 'lucide-react';
+import { useState, useEffect } from 'react'; // Import useState and useEffect
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -29,6 +30,12 @@ export default function ForgotPasswordPage() {
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
   });
+
+  const [clientMounted, setClientMounted] = useState(false);
+
+  useEffect(() => {
+    setClientMounted(true);
+  }, []);
 
   const onSubmit: SubmitHandler<ForgotPasswordFormValues> = async (data) => {
     // Mock password reset request
@@ -51,22 +58,35 @@ export default function ForgotPasswordPage() {
         <CardDescription>Enter your email to receive reset instructions.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              {...register('email')}
-              aria-invalid={errors.email ? "true" : "false"}
-            />
-            {errors.email && <p className="text-sm text-destructive mt-1">{errors.email.message}</p>}
+        {clientMounted ? (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                {...register('email')}
+                aria-invalid={errors.email ? "true" : "false"}
+              />
+              {errors.email && <p className="text-sm text-destructive mt-1">{errors.email.message}</p>}
+            </div>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+            </Button>
+          </form>
+        ) : (
+          // Placeholder structure for SSR/pre-hydration
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email-placeholder">Email</Label>
+              <Input id="email-placeholder" type="email" placeholder="you@example.com" disabled />
+            </div>
+            <Button type="button" className="w-full" disabled>
+              Send Reset Link
+            </Button>
           </div>
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Sending...' : 'Send Reset Link'}
-          </Button>
-        </form>
+        )}
       </CardContent>
       <CardFooter className="justify-center">
         <Link href="/auth/login" passHref>

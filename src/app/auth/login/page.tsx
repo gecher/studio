@@ -15,6 +15,7 @@ import GoogleButton from '@/components/ui/google-button';
 import { Pill } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { MOCK_ADMIN_USER, MOCK_REGULAR_USER } from '@/contexts/auth-context'; // Import mock users
+import { useState, useEffect } from 'react'; // Import useState and useEffect
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -26,7 +27,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const auth = useAuth(); // Get auth context
+  const auth = useAuth();
   const {
     register,
     handleSubmit,
@@ -34,6 +35,12 @@ export default function LoginPage() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
+
+  const [clientMounted, setClientMounted] = useState(false);
+
+  useEffect(() => {
+    setClientMounted(true);
+  }, []);
 
   const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
     await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
@@ -83,46 +90,76 @@ export default function LoginPage() {
         <CardDescription>Log in to access your EasyMeds account.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              {...register('email')}
-              aria-invalid={errors.email ? "true" : "false"}
-            />
-            {errors.email && <p className="text-sm text-destructive mt-1">{errors.email.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link href="/auth/forgot-password" passHref>
-                    <Button variant="link" size="sm" className="p-0 h-auto text-xs">Forgot password?</Button>
-                </Link>
+        {clientMounted ? (
+          <>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  {...register('email')}
+                  aria-invalid={errors.email ? "true" : "false"}
+                />
+                {errors.email && <p className="text-sm text-destructive mt-1">{errors.email.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Link href="/auth/forgot-password" passHref>
+                        <Button variant="link" size="sm" className="p-0 h-auto text-xs">Forgot password?</Button>
+                    </Link>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  {...register('password')}
+                  aria-invalid={errors.password ? "true" : "false"}
+                />
+                {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Logging in...' : 'Log In'}
+              </Button>
+            </form>
+            <div className="my-6 flex items-center">
+              <div className="flex-grow border-t border-border"></div>
+              <span className="mx-4 text-xs text-muted-foreground">OR</span>
+              <div className="flex-grow border-t border-border"></div>
             </div>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              {...register('password')}
-              aria-invalid={errors.password ? "true" : "false"}
-            />
-            {errors.password && <p className="text-sm text-destructive mt-1">{errors.password.message}</p>}
+            <GoogleButton onClick={handleGoogleSignIn} disabled={isSubmitting}>
+              Sign in with Google
+            </GoogleButton>
+          </>
+        ) : (
+          // Placeholder structure to match server render for form area
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email-placeholder">Email</Label>
+              <Input id="email-placeholder" type="email" placeholder="you@example.com" disabled />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password-placeholder">Password</Label>
+                 <Button variant="link" size="sm" className="p-0 h-auto text-xs" disabled>Forgot password?</Button>
+              </div>
+              <Input id="password-placeholder" type="password" placeholder="••••••••" disabled />
+            </div>
+            <Button type="button" className="w-full" disabled>
+              Log In
+            </Button>
+            <div className="my-6 flex items-center">
+              <div className="flex-grow border-t border-border"></div>
+              <span className="mx-4 text-xs text-muted-foreground">OR</span>
+              <div className="flex-grow border-t border-border"></div>
+            </div>
+            <GoogleButton disabled>
+              Sign in with Google
+            </GoogleButton>
           </div>
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Logging in...' : 'Log In'}
-          </Button>
-        </form>
-        <div className="my-6 flex items-center">
-          <div className="flex-grow border-t border-border"></div>
-          <span className="mx-4 text-xs text-muted-foreground">OR</span>
-          <div className="flex-grow border-t border-border"></div>
-        </div>
-        <GoogleButton onClick={handleGoogleSignIn} disabled={isSubmitting}>
-          Sign in with Google
-        </GoogleButton>
+        )}
       </CardContent>
       <CardFooter className="justify-center">
         <p className="text-sm text-muted-foreground">
@@ -135,4 +172,3 @@ export default function LoginPage() {
     </Card>
   );
 }
-
