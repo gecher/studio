@@ -8,14 +8,25 @@ import { createContext, useContext, useState, useEffect } from 'react';
 interface AuthContextType {
   isAuthenticated: boolean;
   currentUser: User | null;
-  login: (user: User) => void; // Simplified login, real app would take credentials
+  login: (user: User) => void; // Login now takes the authenticated user object
   signup: (user: User) => void; // Simplified signup
   logout: () => void;
   mounted: boolean;
 }
 
-// Mock current user for demonstration after "login"
-const MOCK_LOGGED_IN_USER: User = {
+// Mock admin user for demonstration
+export const MOCK_ADMIN_USER: User = {
+  id: 'usr_admin_001',
+  name: 'Admin User',
+  email: 'admin@example.com', // Specific email for admin login
+  role: 'admin',
+  status: 'active',
+  dateJoined: new Date().toISOString().split('T')[0],
+  lastLogin: new Date().toISOString().split('T')[0],
+};
+
+// Mock regular user for demonstration if needed for other signup/login flows
+export const MOCK_REGULAR_USER: User = {
   id: 'usr_mock_001',
   name: 'Mock User',
   email: 'mock.user@example.com',
@@ -36,7 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setMounted(true);
     // In a real app, you might check for a token in localStorage here
-    // For mock purposes, we start unauthenticated
   }, []);
 
   const login = (user: User) => {
@@ -59,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const contextValue = {
-    isAuthenticated: mounted ? isAuthenticated : false, // Reflect actual state only after mount
+    isAuthenticated: mounted ? isAuthenticated : false,
     currentUser: mounted ? currentUser : null,
     login,
     signup,
@@ -77,3 +87,4 @@ export function useAuth() {
   }
   return context;
 }
+

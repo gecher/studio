@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import GoogleButton from '@/components/ui/google-button';
 import { Pill } from 'lucide-react';
+import { useAuth, MOCK_REGULAR_USER } from '@/contexts/auth-context'; // Import useAuth and MOCK_REGULAR_USER
 
 const signupSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters.' }),
@@ -29,6 +30,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth(); // Get auth context
   const {
     register,
     handleSubmit,
@@ -40,24 +42,34 @@ export default function SignupPage() {
   const onSubmit: SubmitHandler<SignupFormValues> = async (data) => {
     // Mock signup
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log('Signup data:', data);
-    // Add to mockUsers if needed for further demo, for now just log and toast
-    // mockUsers.push({ id: `usr_${Date.now()}`, name: data.fullName, email: data.email, role: 'customer', status: 'active', dateJoined: new Date().toISOString().split('T')[0] });
+    
+    // For mock purposes, create a user object similar to MOCK_REGULAR_USER structure
+    const newUser = { 
+        ...MOCK_REGULAR_USER, // Spread base structure
+        id: `usr_${Date.now()}`, 
+        name: data.fullName, 
+        email: data.email, 
+        dateJoined: new Date().toISOString().split('T')[0],
+        // Password should not be stored directly in currentUser state
+    };
+    auth.signup(newUser); // Use auth context signup
+
     toast({
       title: 'Account Created Successfully',
       description: 'Welcome to EasyMeds! Please log in.',
     });
-    router.push('/auth/login'); // Redirect to login after signup
+    router.push('/auth/login'); 
   };
 
   const handleGoogleSignUp = async () => {
-    // Mock Google sign-up
     await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Simulate Google sign-up with a mock regular user
+    auth.signup(MOCK_REGULAR_USER); 
     toast({
       title: 'Google Sign-Up Successful',
-      description: 'Welcome! Your account is created.',
+      description: `Welcome, ${MOCK_REGULAR_USER.name}! Your account is created.`,
     });
-    router.push('/order-medicines'); // Redirect to a relevant page
+    router.push('/order-medicines'); 
   };
 
 
@@ -139,3 +151,4 @@ export default function SignupPage() {
     </Card>
   );
 }
+

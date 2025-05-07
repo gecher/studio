@@ -9,7 +9,7 @@ import SidebarNav from '@/components/layout/sidebar-nav';
 import ChatbotWidget from '@/components/layout/chatbot-widget';
 import { ChatbotProvider } from '@/contexts/chatbot-context';
 import { LanguageProvider } from '@/contexts/language-context';
-import { AuthProvider } from '@/contexts/auth-context'; // Import AuthProvider
+import { AuthProvider } from '@/contexts/auth-context';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider> {/* Wrap with AuthProvider */}
+        <AuthProvider>
           <LanguageProvider>
             <ChatbotProvider>
               <SidebarProvider defaultOpen={true}>
@@ -55,3 +55,4 @@ export default function RootLayout({
     </html>
   );
 }
+

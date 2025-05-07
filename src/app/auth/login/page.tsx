@@ -12,11 +12,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import GoogleButton from '@/components/ui/google-button';
-import { Pill } from 'lucide-react'; // Assuming Pill icon is appropriate
+import { Pill } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { MOCK_ADMIN_USER, MOCK_REGULAR_USER } from '@/contexts/auth-context'; // Import mock users
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
-  password: z.string().min(1, { message: 'Password is required.' }), // Min 1 for demo, usually more
+  password: z.string().min(1, { message: 'Password is required.' }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -24,6 +26,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth(); // Get auth context
   const {
     register,
     handleSubmit,
@@ -33,22 +36,39 @@ export default function LoginPage() {
   });
 
   const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
-    // Mock login
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log('Login data:', data);
-    toast({
-      title: 'Login Successful',
-      description: 'Welcome back!',
-    });
-    router.push('/order-medicines'); // Redirect to a relevant page after login
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+
+    if (data.email === MOCK_ADMIN_USER.email && data.password === '1234') {
+      auth.login(MOCK_ADMIN_USER);
+      toast({
+        title: 'Admin Login Successful',
+        description: `Welcome back, ${MOCK_ADMIN_USER.name}!`,
+      });
+      router.push('/admin'); // Redirect admin to admin dashboard
+    } else if (data.email === MOCK_REGULAR_USER.email && data.password === 'password') { // Example regular user
+      auth.login(MOCK_REGULAR_USER);
+       toast({
+        title: 'Login Successful',
+        description: `Welcome back, ${MOCK_REGULAR_USER.name}!`,
+      });
+      router.push('/order-medicines');
+    }
+     else {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: 'Invalid email or password.',
+      });
+    }
   };
 
   const handleGoogleSignIn = async () => {
-    // Mock Google sign-in
     await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Simulate Google sign-in with a mock regular user
+    auth.login(MOCK_REGULAR_USER); 
     toast({
       title: 'Google Sign-In Successful',
-      description: 'Welcome!',
+      description: `Welcome, ${MOCK_REGULAR_USER.name}!`,
     });
     router.push('/order-medicines');
   };
@@ -115,3 +135,4 @@ export default function LoginPage() {
     </Card>
   );
 }
+
