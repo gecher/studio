@@ -1,14 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { Menu, Search, ShoppingCart, UserCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Menu, Search, ShoppingCart, UserCircle2, PanelLeft } from 'lucide-react';
+import { Button, type ButtonProps } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import LanguageToggle from '@/components/language-toggle';
 import { SheetTrigger, Sheet, SheetContent } from '@/components/ui/sheet';
 import CartPageContent from '@/components/cart/cart-content';
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import { Slot } from "@radix-ui/react-slot"
+
 
 export default function Header() {
   const { isMobile } = useSidebar();
@@ -40,7 +43,12 @@ export default function Header() {
         />
       </div>
       <div className="flex items-center gap-2 md:gap-4">
-        <LanguageToggle />
+        {mounted ? (
+          <LanguageToggle />
+        ) : (
+          <div className="h-10 w-10" aria-hidden="true" /> // Placeholder for LanguageToggle
+        )}
+        
         {mounted ? (
           <Sheet>
             <SheetTrigger asChild>
@@ -51,14 +59,15 @@ export default function Header() {
                 {/* <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">3</span> */}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:max-w-md">
+            <SheetContent side="right" className="w-full sm:max-w-md p-0"> {/* Adjusted padding for CartPageContent */}
               <CartPageContent />
             </SheetContent>
           </Sheet>
         ) : (
+          // This placeholder is rendered during SSR and initial client render for the cart icon
           <Button variant="ghost" size="icon" className="relative" disabled>
             <ShoppingCart className="h-5 w-5" />
-            <span className="sr-only">Open Cart</span>
+            <span className="sr-only">Open Cart (loading)</span>
           </Button>
         )}
         <Link href="/login">
@@ -87,8 +96,19 @@ function PillIcon(props: React.SVGProps<SVGSVGElement>) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
+      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 0 1 0 7 7Z" />
       <path d="m8.5 8.5 7 7" />
     </svg>
   );
 }
+
+// The SidebarTrigger defined in ui/sidebar.tsx had an issue with asChild.
+// The following is a corrected version that should be in ui/sidebar.tsx, but for an isolated fix,
+// if header.tsx is the only consumer with asChild, it could be defined locally or fixed globally.
+// For now, assuming the global ui/sidebar.tsx is fixed, this local definition is not strictly needed here.
+// However, if ui/sidebar.tsx's SidebarTrigger wasn't updated correctly, this local definition would show how to handle asChild.
+// Since the error was in Button's Comp, the fix is likely in ui/button or how asChild is handled by Radix/Slot.
+// The previous fix in ui/sidebar.tsx already addressed the asChild pattern for SidebarTrigger.
+// The current issue is specific to LanguageToggle, so no changes to SidebarTrigger are made here.
+// This component seems fine as is from previous step.
+
