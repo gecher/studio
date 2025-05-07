@@ -4,6 +4,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string; // Optional: For mock data/local auth simulation
   role: 'admin' | 'pharmacist' | 'customer' | 'doctor' | 'partner';
   status: 'active' | 'suspended' | 'pending_verification';
   lastLogin?: string;
@@ -97,6 +98,12 @@ export interface DoctorProfile {
     yearsExperience: number;
     status: 'active' | 'inactive' | 'pending_verification'; 
     avatarUrl?: string;
+    // Include fields from User if DoctorProfile extends/is a User
+    email?: string;
+    password?: string; // For mock/local auth simulation
+    contactEmail?: string;
+    contactPhone?: string;
+    bio?: string;
 }
 
 export interface InsurancePolicy {
@@ -198,11 +205,11 @@ export interface PaymentGatewaySetting {
     environment: 'sandbox' | 'production';
 }
 
-export interface PharmacyPartner {
-  id: string; 
+export interface PharmacyPartner extends User { // Extend User for consistency
   pharmacyName: string;
   address: string;
   contactEmail: string;
   contactPhone: string;
-  status: 'active' | 'inactive' | 'pending_approval';
+  // status: 'active' | 'inactive' | 'pending_approval'; // Status is already in User
 }
+

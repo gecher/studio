@@ -23,6 +23,7 @@ export const MOCK_ADMIN_USER: User = {
   id: 'usr_admin_001',
   name: 'Admin EasyMeds',
   email: 'admin@example.com',
+  password: 'adminpass', // Added password
   role: 'admin',
   status: 'active',
   dateJoined: today,
@@ -35,6 +36,7 @@ export const MOCK_BASIC_CUSTOMER_USER: User = {
   id: 'usr_customer_001',
   name: 'Abebe Bikila',
   email: 'customer@example.com',
+  password: 'customerpass', // Added password
   role: 'customer',
   status: 'active',
   dateJoined: today,
@@ -50,6 +52,7 @@ export const MOCK_PLUS_CUSTOMER_USER: User = {
   id: 'usr_customer_002',
   name: 'Tirunesh Dibaba',
   email: 'pluscustomer@example.com',
+  password: 'pluspass', // Added password
   role: 'customer',
   status: 'active',
   dateJoined: today,
@@ -65,11 +68,12 @@ export const MOCK_PHARMACIST_USER: User = {
   id: 'usr_pharmacist_001',
   name: 'Pharmacist Fatuma',
   email: 'pharmacist@example.com',
+  password: 'pharmacistpass', // Added password
   role: 'pharmacist',
   status: 'active',
   dateJoined: today,
   lastLogin: today,
-  accountType: 'basic', // Pharmacists don't have 'plus' tier
+  accountType: 'basic', 
   avatarUrl: 'https://picsum.photos/seed/pharmacist/200'
 };
 
@@ -77,11 +81,12 @@ export const MOCK_DOCTOR_USER: User = {
   id: 'usr_doctor_001',
   name: 'Dr. Kenenisa',
   email: 'doctor@example.com',
+  password: 'doctorpass', // Added password
   role: 'doctor',
   status: 'active',
   dateJoined: today,
   lastLogin: today,
-  accountType: 'basic', // Doctors don't have 'plus' tier
+  accountType: 'basic', 
   avatarUrl: 'https://picsum.photos/seed/doctor/200'
 };
 
@@ -89,11 +94,12 @@ export const MOCK_PARTNER_USER: User = {
   id: 'usr_partner_001',
   name: 'Bole Pharmacy Partner',
   email: 'partner@example.com',
+  password: 'partnerpass', // Added password
   role: 'partner',
   status: 'active',
   dateJoined: today,
   lastLogin: today,
-  accountType: 'basic', // Partners might have tiers later, but 'basic' for now
+  accountType: 'basic', 
   avatarUrl: 'https://picsum.photos/seed/partner/200'
 };
 
@@ -170,3 +176,4 @@ export function useAuth() {
   }
   return context;
 }
+
