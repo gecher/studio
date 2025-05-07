@@ -4,10 +4,9 @@
 import * as React from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
-import { PlusCircle, Filter, CheckCircle, XCircle } from 'lucide-react';
+import { PlusCircle, Filter, CheckCircle, XCircle as LucideXCircle } from 'lucide-react'; // Renamed to avoid conflict
 
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { DataTable } from '@/app/admin/_components/data-table';
 import AdminHeader from '@/app/admin/_components/admin-header';
 import { mockUsers } from '@/app/admin/_lib/mock-data';
@@ -18,24 +17,28 @@ import {
   createActionsColumn,
   createGenericColumn
 } from '@/app/admin/_components/columns-common';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+// Dropdown for filters is commented out, can be re-enabled if needed
+// import {
+//   DropdownMenu,
+//   DropdownMenuCheckboxItem,
+//   DropdownMenuContent,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from '@/components/ui/dropdown-menu';
 
 export default function UserManagementPage() {
   const [data, setData] = React.useState<User[]>(mockUsers);
   // TODO: Add state for filters if needed
 
   const handleDeleteUser = (userId: string) => {
-    // Implement delete logic: API call, then update state
+    if (userId === 'usr_admin_001') { // Prevent deleting mock admin
+        alert("Cannot delete the main admin user in this demo.");
+        return;
+    }
     console.log("Delete user:", userId);
     setData(prev => prev.filter(user => user.id !== userId));
-    // Show toast notification
   };
   
   const columns: ColumnDef<User>[] = [
@@ -44,6 +47,17 @@ export default function UserManagementPage() {
     createGenericColumn<User>('name', 'Name'),
     createGenericColumn<User>('email', 'Email'),
     createGenericColumn<User>('role', 'Role'),
+    {
+        accessorKey: 'accountType',
+        header: 'Acc. Type',
+        cell: ({ row }) => {
+            const user = row.original;
+            if (user.role === 'customer') {
+                return <Badge variant={user.accountType === 'easymeds_plus' ? "default" : "secondary"} className="capitalize">{user.accountType.replace('_', ' ')}</Badge>;
+            }
+            return <span className="text-muted-foreground">-</span>;
+        }
+    },
     createStatusColumn<User>('status', 'Status'),
     createGenericColumn<User>('insuranceProvider', 'Insurance'),
     createGenericColumn<User>('insurancePolicyNumber', 'Policy #'),
@@ -54,10 +68,9 @@ export default function UserManagementPage() {
       viewHref: (id) => `/admin/users/${id}`,
       editHref: (id) => `/admin/users/edit/${id}`,
       onDelete: handleDeleteUser,
-      // Add custom actions like 'Verify Insurance', 'Suspend User' here
        customActions: (user) => [
         ...(user.insuranceProvider && !user.insuranceVerified && user.status !== 'suspended' ? [{ label: 'Verify Insurance', icon: CheckCircle, onClick: () => console.log(`Verify insurance for ${user.id}`) }] : []),
-        ...(user.status === 'active' ? [{ label: 'Suspend User', icon: XCircle, onClick: () => console.log(`Suspend user ${user.id}`), isDestructive: true }] : []),
+        ...(user.status === 'active' && user.id !== 'usr_admin_001' ? [{ label: 'Suspend User', icon: LucideXCircle, onClick: () => console.log(`Suspend user ${user.id}`), isDestructive: true }] : []),
         ...(user.status === 'suspended' ? [{ label: 'Reactivate User', icon: CheckCircle, onClick: () => console.log(`Reactivate user ${user.id}`) }] : []),
       ]
     }),
@@ -76,34 +89,12 @@ export default function UserManagementPage() {
         }
       />
       
-      {/* TODO: Add filter controls here if needed, e.g., by role, status */}
-      {/* 
-      <div className="flex items-center space-x-2">
-         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" /> Filter by Role
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>Role</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {['admin', 'pharmacist', 'customer', 'doctor'].map(role => (
-               <DropdownMenuCheckboxItem key={role} >{role}</DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        // Similar dropdown for status
-      </div>
-      */}
-
       <DataTable 
         columns={columns} 
         data={data}
-        searchKey="name" // Or "email"
+        searchKey="name" 
         searchPlaceholder="Search by name or email..."
       />
     </div>
   );
 }
-
