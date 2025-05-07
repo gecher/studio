@@ -1,7 +1,7 @@
 
 'use client';
 
-import *ాలు
+import * as React from 'react';
 import { useForm, SubmitHandler, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -36,7 +36,7 @@ type PaymentSettingsFormData = z.infer<typeof paymentSettingsSchema>;
 export default function PaymentSettingsPage() {
   const { toast } = useToast();
   
-  const { control, handleSubmit, formState: { errors, isDirty } } = useForm<PaymentSettingsFormData>({
+  const { control, handleSubmit, formState: { errors, isDirty }, register: formRegister } = useForm<PaymentSettingsFormData>({
     resolver: zodResolver(paymentSettingsSchema),
     defaultValues: {
       gateways: mockPaymentGatewaySettings,
@@ -82,8 +82,8 @@ export default function PaymentSettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Name is part of the field, not directly editable in this setup usually, but shown */}
-                  <input type="hidden" {...control.register(`gateways.${index}.id` as const)} />
-                  <input type="hidden" {...control.register(`gateways.${index}.name` as const)} />
+                  <input type="hidden" {...formRegister(`gateways.${index}.id` as const)} />
+                  <input type="hidden" {...formRegister(`gateways.${index}.name` as const)} />
                   
                   <div>
                     <Label htmlFor={`gateways.${index}.apiKey`}>API Key</Label>
