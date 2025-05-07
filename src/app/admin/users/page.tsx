@@ -4,13 +4,13 @@
 import * as React from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
-import { PlusCircle, Filter, CheckCircle, XCircle as LucideXCircle } from 'lucide-react'; // Renamed to avoid conflict
+import { PlusCircle, Filter, CheckCircle, XCircle as LucideXCircle, User } from 'lucide-react'; 
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/app/admin/_components/data-table';
 import AdminHeader from '@/app/admin/_components/admin-header';
 import { mockUsers } from '@/app/admin/_lib/mock-data';
-import type { User } from '@/app/admin/_types';
+import type { User as UserType } from '@/app/admin/_types'; // Renamed to avoid conflict with Lucide icon
 import { 
   createSelectColumn, 
   createStatusColumn, 
@@ -29,7 +29,7 @@ import { Badge } from '@/components/ui/badge';
 // } from '@/components/ui/dropdown-menu';
 
 export default function UserManagementPage() {
-  const [data, setData] = React.useState<User[]>(mockUsers);
+  const [data, setData] = React.useState<UserType[]>(mockUsers);
   // TODO: Add state for filters if needed
 
   const handleDeleteUser = (userId: string) => {
@@ -41,30 +41,30 @@ export default function UserManagementPage() {
     setData(prev => prev.filter(user => user.id !== userId));
   };
   
-  const columns: ColumnDef<User>[] = [
-    createSelectColumn<User>(),
-    createGenericColumn<User>('id', 'User ID'),
-    createGenericColumn<User>('name', 'Name'),
-    createGenericColumn<User>('email', 'Email'),
-    createGenericColumn<User>('role', 'Role'),
+  const columns: ColumnDef<UserType>[] = [
+    createSelectColumn<UserType>(),
+    createGenericColumn<UserType>('id', 'User ID'),
+    createGenericColumn<UserType>('name', 'Name'),
+    createGenericColumn<UserType>('email', 'Email'),
+    createGenericColumn<UserType>('role', 'Role'),
     {
         accessorKey: 'accountType',
         header: 'Acc. Type',
         cell: ({ row }) => {
             const user = row.original;
-            if (user.role === 'customer') {
+            if (user.role === 'customer' && user.accountType) { // Ensure accountType exists
                 return <Badge variant={user.accountType === 'easymeds_plus' ? "default" : "secondary"} className="capitalize">{user.accountType.replace('_', ' ')}</Badge>;
             }
             return <span className="text-muted-foreground">-</span>;
         }
     },
-    createStatusColumn<User>('status', 'Status'),
-    createGenericColumn<User>('insuranceProvider', 'Insurance'),
-    createGenericColumn<User>('insurancePolicyNumber', 'Policy #'),
-    createGenericColumn<User>('insuranceVerified', 'Ins. Verified'),
-    createGenericColumn<User>('dateJoined', 'Date Joined'),
-    createGenericColumn<User>('lastLogin', 'Last Login'),
-    createActionsColumn<User>({
+    createStatusColumn<UserType>('status', 'Status'),
+    createGenericColumn<UserType>('insuranceProvider', 'Insurance'),
+    createGenericColumn<UserType>('insurancePolicyNumber', 'Policy #'),
+    createGenericColumn<UserType>('insuranceVerified', 'Ins. Verified'),
+    createGenericColumn<UserType>('dateJoined', 'Date Joined'),
+    createGenericColumn<UserType>('lastLogin', 'Last Login'),
+    createActionsColumn<UserType>({
       viewHref: (id) => `/admin/users/${id}`,
       editHref: (id) => `/admin/users/edit/${id}`,
       onDelete: handleDeleteUser,
@@ -98,3 +98,6 @@ export default function UserManagementPage() {
     </div>
   );
 }
+
+
+    
