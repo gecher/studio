@@ -1,13 +1,14 @@
+
 'use client';
 
 import Link from 'next/link';
-import { Menu, Search, ShoppingCart, UserCircle2, LogIn, LogOut } from 'lucide-react';
+import { Menu, Search, ShoppingCart, UserCircle2, LogIn, LogOut, Pill as PillIcon, Settings2 } from 'lucide-react'; // Added Settings2
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import LanguageToggle from '@/components/language-toggle';
 import { SheetTrigger, Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import CartPageContent, { type CartPageContentProps } from '@/components/cart/cart-content';
+import CartPageContent from '@/components/cart/cart-content';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context'; 
 import { useCart } from '@/contexts/cart-context';
@@ -38,7 +39,12 @@ export default function Header() {
   };
 
   const renderLanguageToggle = () => {
-    if (!mounted) return <div className="h-10 w-10" aria-hidden="true" />;
+    if (!mounted) {
+      // Fallback for SSR to avoid hydration mismatch with Radix components that might inject attributes
+      // Render a placeholder div with the same dimensions as the Button size="icon" (h-10 w-10 => 40px)
+      // This avoids rendering a Button component that might conflict with Radix attribute injection during hydration
+      return <div className="h-10 w-10" aria-hidden="true" />;
+    }
     return <LanguageToggle />;
   };
 
@@ -180,25 +186,5 @@ export default function Header() {
         {renderProfileButton()}
       </div>
     </header>
-  );
-}
-
-function PillIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
-      <path d="m8.5 8.5 7 7" />
-    </svg>
   );
 }
