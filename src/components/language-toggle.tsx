@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,46 +9,34 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useLanguage } from '@/contexts/language-context';
 
 export default function LanguageToggle() {
-  const [mounted, setMounted] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState('EN'); // Default to English
-
-  useEffect(() => {
-    setMounted(true);
-    // Here you would typically load the saved language preference
-    // For now, it defaults to EN
-  }, []);
-
-  const setLanguage = (lang: 'EN' | 'AM') => {
-    setCurrentLanguage(lang);
-    // Here you would typically save the preference and update i18n context
-    console.log(`Language changed to ${lang}`);
-  };
+  const { language, setLanguage, mounted } = useLanguage();
 
   if (!mounted) {
-    // Return null to ensure server and initial client renders match (render nothing)
-    // The component will "pop in" on the client after mount.
-    return null;
+    // Render a placeholder to avoid hydration mismatch, ensuring consistent server and initial client render
+    return <div className="h-10 w-10" aria-hidden="true" />;
   }
+  
+  const displayLanguage = language === 'english' ? 'EN' : 'አማ';
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Current language: ${currentLanguage}. Change language`}>
+        <Button variant="ghost" size="icon" aria-label={`Current language: ${displayLanguage}. Change language`}>
           <Languages className="h-5 w-5" />
-          <span className="sr-only">Change language</span>
+          <span className="sr-only">Change language ({displayLanguage})</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setLanguage('EN')} disabled={currentLanguage === 'EN'}>
+        <DropdownMenuItem onClick={() => setLanguage('english')} disabled={language === 'english'}>
           English (EN)
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setLanguage('AM')} disabled={currentLanguage === 'AM'}>
+        <DropdownMenuItem onClick={() => setLanguage('amharic')} disabled={language === 'amharic'}>
           አማርኛ (AM)
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
-

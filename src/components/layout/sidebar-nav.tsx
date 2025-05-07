@@ -32,43 +32,50 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useChatbot } from '@/contexts/chatbot-context';
+import { useLanguage, type Language as AppLanguage } from '@/contexts/language-context'; 
 
 interface NavItem {
   href?: string;
   label: string;
+  amharicLabel?: string; 
   icon: LucideIcon;
   adminOnly?: boolean;
   action?: () => void;
 }
 
-const navItemsList = (setIsChatbotOpen: (open: boolean) => void): NavItem[] => [
-  { href: '/', label: 'Home', icon: HomeIcon },
-  { href: '/order-medicines', label: 'Order Medicines', icon: PillIconLucide },
-  { href: '/products', label: 'Healthcare Products', icon: BriefcaseMedical },
-  { href: '/diagnostics', label: 'Book Diagnostics', icon: FlaskConical },
-  { href: '/teleconsultation', label: 'Teleconsultation', icon: Video },
-  { href: '/subscriptions', label: 'My Subscriptions', icon: Repeat },
-  { href: '/health-hub', label: 'Health Hub', icon: BookOpenText },
-  { href: '/pharmacy-locator', label: 'Pharmacy Locator', icon: MapPin },
-  { href: '/insurance', label: 'My Insurance', icon: ShieldCheck },
-  { href: '/profile', label: 'User Profile', icon: UserCircle2 },
+const navItemsList = (setIsChatbotOpen: (open: boolean) => void, currentLanguage: AppLanguage): NavItem[] => [
+  { href: '/', label: 'Home', amharicLabel: 'ዋና ገጽ', icon: HomeIcon },
+  { href: '/order-medicines', label: 'Order Medicines', amharicLabel: 'መድኃኒቶችን ይዘዙ', icon: PillIconLucide },
+  { href: '/products', label: 'Healthcare Products', amharicLabel: 'የጤና ምርቶች', icon: BriefcaseMedical },
+  { href: '/diagnostics', label: 'Book Diagnostics', amharicLabel: 'ምርመራ ያስይዙ', icon: FlaskConical },
+  { href: '/teleconsultation', label: 'Teleconsultation', amharicLabel: 'የቴሌ ምክክር', icon: Video },
+  { href: '/subscriptions', label: 'My Subscriptions', amharicLabel: 'የእኔ ምዝገባዎች', icon: Repeat },
+  { href: '/health-hub', label: 'Health Hub', amharicLabel: 'የጤና መረጃ ማዕከል', icon: BookOpenText },
+  { href: '/pharmacy-locator', label: 'Pharmacy Locator', amharicLabel: 'ፋርማሲ አመልካች', icon: MapPin },
+  { href: '/insurance', label: 'My Insurance', amharicLabel: 'የእኔ መድን', icon: ShieldCheck },
+  { href: '/profile', label: 'User Profile', amharicLabel: 'የተጠቃሚ መገለጫ', icon: UserCircle2 },
   { 
     label: 'Support Chatbot', 
+    amharicLabel: 'የድጋፍ ቻትቦት',
     icon: MessageCircle, 
     action: () => setIsChatbotOpen(true) 
   },
-  { href: '/admin', label: 'Admin Dashboard', icon: Settings2, adminOnly: true },
+  { href: '/admin', label: 'Admin Dashboard', amharicLabel: 'የአስተዳዳሪ ዳሽቦርድ', icon: Settings2, adminOnly: true },
 ];
 
 export default function SidebarNav() {
   const pathname = usePathname();
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
   const { setIsChatbotOpen } = useChatbot();
+  const { language, mounted: languageMounted } = useLanguage(); 
 
-  // Placeholder for admin check
   const isAdmin = true; 
   
-  const currentNavItems = navItemsList(setIsChatbotOpen);
+  if (!languageMounted) {
+    return null; 
+  }
+
+  const currentNavItems = navItemsList(setIsChatbotOpen, language);
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
@@ -89,6 +96,8 @@ export default function SidebarNav() {
             }
             const Icon = item.icon;
             const isActive = item.href ? (pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))) : false;
+            
+            const displayLabel = language === 'amharic' && item.amharicLabel ? item.amharicLabel : item.label;
 
             if (item.action) {
               return (
@@ -98,12 +107,12 @@ export default function SidebarNav() {
                       item.action!();
                       if (isMobile) setOpenMobile(false);
                     }}
-                    isActive={false} // Action items typically don't have an 'active' state like links
-                    tooltip={{ children: item.label, side: 'right', align: 'center' }}
+                    isActive={false}
+                    tooltip={{ children: displayLabel, side: 'right', align: 'center' }}
                     className={cn("hover:bg-sidebar-accent hover:text-sidebar-accent-foreground")}
                   >
                     <Icon className="h-5 w-5" />
-                    <span>{item.label}</span>
+                    <span>{displayLabel}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );
@@ -115,14 +124,14 @@ export default function SidebarNav() {
                       asChild
                       isActive={isActive}
                       onClick={() => isMobile && setOpenMobile(false)}
-                      tooltip={{ children: item.label, side: 'right', align: 'center' }}
+                      tooltip={{ children: displayLabel, side: 'right', align: 'center' }}
                       className={cn(
                         isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       )}
                     >
                       <a>
                         <Icon className="h-5 w-5" />
-                        <span>{item.label}</span>
+                        <span>{displayLabel}</span>
                       </a>
                     </SidebarMenuButton>
                   </Link>
@@ -134,7 +143,6 @@ export default function SidebarNav() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-4">
-        {/* Footer content like settings, logout can go here */}
       </SidebarFooter>
     </Sidebar>
   );

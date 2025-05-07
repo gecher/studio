@@ -19,6 +19,7 @@ import { supportChatbot, type SupportChatbotInput, type SupportChatbotOutput } f
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useChatbot } from '@/contexts/chatbot-context';
+import { useLanguage } from '@/contexts/language-context'; 
 
 interface ChatMessage {
   id: string;
@@ -27,23 +28,28 @@ interface ChatMessage {
 }
 
 export default function ChatbotWidget() {
-  const [mounted, setMounted] = useState(false);
+  const { language: currentSelectedLanguage, mounted: languageMounted } = useLanguage(); 
   const { isChatbotOpen, setIsChatbotOpen } = useChatbot();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'initial-bot-message',
-      sender: 'bot',
-      text: "Hello! I'm EasyMeds support bot. How can I help you today with orders, tests, or health information?",
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const scrollViewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (languageMounted) {
+      setMessages([
+        {
+          id: 'initial-bot-message',
+          sender: 'bot',
+          text: currentSelectedLanguage === 'amharic' 
+            ? "ሰላም! እኔ የኢዚሜድስ የድጋፍ ቦት ነኝ። በዛሬው ዕለት በትዕዛዝ፣ ምርመራ ወይም የጤና መረጃ እንዴት ልረዳዎት እችላለሁ?" 
+            : "Hello! I'm EasyMeds support bot. How can I help you today with orders, tests, or health information?",
+        },
+      ]);
+    }
+  }, [languageMounted, currentSelectedLanguage]);
+
 
   useEffect(() => {
     if (scrollViewportRef.current) {
@@ -52,13 +58,13 @@ export default function ChatbotWidget() {
         behavior: 'smooth',
       });
     }
-  }, [messages, isChatbotOpen]); // Also scroll when sheet opens
+  }, [messages, isChatbotOpen]);
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || !languageMounted) return; 
 
     const userMessageText = inputValue;
-    setInputValue(''); // Clear input immediately
+    setInputValue(''); 
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -69,10 +75,9 @@ export default function ChatbotWidget() {
     setIsLoading(true);
 
     try {
-      // TODO: Integrate with LanguageToggle to get current language dynamically
       const input: SupportChatbotInput = {
         query: userMessageText,
-        language: 'english', 
+        language: currentSelectedLanguage, 
       };
       const output: SupportChatbotOutput = await supportChatbot(input);
       const botMessage: ChatMessage = {
@@ -83,7 +88,9 @@ export default function ChatbotWidget() {
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('Error calling chatbot:', error);
-      const errorMessageText = 'Sorry, I encountered an issue processing your request. Please try again in a few moments.';
+      const errorMessageText = currentSelectedLanguage === 'amharic'
+        ? 'ይቅርታ፣ ጥያቄዎን በማስኬድ ላይ ችግር አጋጥሞኛል። እባክዎ ከጥቂት ደቂቃዎች በኋላ እንደገና ይሞክሩ።'
+        : 'Sorry, I encountered an issue processing your request. Please try again in a few moments.';
       const errorMessage: ChatMessage = {
         id: `error-${Date.now()}`,
         sender: 'bot',
@@ -92,16 +99,15 @@ export default function ChatbotWidget() {
       setMessages(prev => [...prev, errorMessage]);
       toast({
         variant: 'destructive',
-        title: 'Chatbot Error',
-        description: 'Could not get a response from the chatbot.',
+        title: currentSelectedLanguage === 'amharic' ? 'የቻትቦት ስህተት' : 'Chatbot Error',
+        description: currentSelectedLanguage === 'amharic' ? 'ከቻትቦቱ ምላሽ ማግኘት አልተቻለም።' : 'Could not get a response from the chatbot.',
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!mounted) {
-    // Render a placeholder for the FAB to prevent hydration mismatch
+  if (!languageMounted) { 
     return <div className="fixed bottom-6 right-6 w-16 h-16" aria-hidden="true" />;
   }
 
@@ -121,10 +127,13 @@ export default function ChatbotWidget() {
       <SheetContent side="right" className="w-full max-w-md flex flex-col p-0 data-[state=open]:shadow-2xl">
         <SheetHeader className="p-4 border-b bg-card">
           <SheetTitle className="flex items-center gap-2 text-lg">
-            <Bot className="text-primary h-6 w-6" /> EasyMeds Support
+            <Bot className="text-primary h-6 w-6" /> 
+            {currentSelectedLanguage === 'amharic' ? 'ኢዚሜድስ ድጋፍ' : 'EasyMeds Support'}
           </SheetTitle>
           <SheetDescription className="text-xs">
-            Ask about orders, products, tests, or general health info.
+            {currentSelectedLanguage === 'amharic' 
+              ? 'ስለ ትዕዛዞች፣ ምርቶች፣ ምርመራዎች ወይም አጠቃላይ የጤና መረጃ ይጠይቁ።' 
+              : 'Ask about orders, products, tests, or general health info.'}
           </SheetDescription>
         </SheetHeader>
         
@@ -149,7 +158,7 @@ export default function ChatbotWidget() {
                       : 'bg-secondary text-secondary-foreground rounded-bl-none'
                   )}
                 >
-                  {message.text.split('\\n').map((line, index) => (
+                  {message.text.split('\\n').map((line, index) => ( 
                     <span key={index}>
                       {line}
                       {index < message.text.split('\\n').length - 1 && <br />}
@@ -182,7 +191,7 @@ export default function ChatbotWidget() {
           >
             <Input
               type="text"
-              placeholder="Type your message..."
+              placeholder={currentSelectedLanguage === 'amharic' ? 'መልዕክትዎን እዚህ ያስገቡ...' : 'Type your message...'}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className="flex-1 h-11 text-base focus-visible:ring-primary"
