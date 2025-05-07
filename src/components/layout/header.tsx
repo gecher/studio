@@ -9,11 +9,17 @@ import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import LanguageToggle from '@/components/language-toggle';
 import { SheetTrigger, Sheet, SheetContent } from '@/components/ui/sheet';
 import CartPageContent from '@/components/cart/cart-content';
-// Removed useState, useEffect imports as they are no longer needed for 'mounted' state
+import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+
 
 export default function Header() {
   const { isMobile } = useSidebar();
-  // Removed local 'mounted' state and useEffect for it.
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 shadow-sm">
@@ -37,23 +43,31 @@ export default function Header() {
         />
       </div>
       <div className="flex items-center gap-2 md:gap-4">
-        {/* Always render LanguageToggle; it handles its own mounting logic */}
-        <LanguageToggle />
+        {mounted ? (
+          <LanguageToggle />
+        ) : (
+          // Placeholder for LanguageToggle: A simple div with same dimensions as Button size="icon" (h-10 w-10 for Radix compatibility)
+          <div className="h-10 w-10" aria-hidden="true" />
+        )}
         
-        {/* Always render Cart Sheet structure; CartPageContent handles its content */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="sr-only">Open Cart</span>
-              {/* Optional: Add a badge for item count */}
-              {/* <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">3</span> */}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-full sm:max-w-md p-0">
-            <CartPageContent />
-          </SheetContent>
-        </Sheet>
+        {mounted ? (
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                <span className="sr-only">Open Cart</span>
+                {/* Optional: Add a badge for item count */}
+                {/* <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">3</span> */}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md p-0">
+              <CartPageContent />
+            </SheetContent>
+          </Sheet>
+        ) : (
+          // Placeholder for Cart Trigger: A simple div with same dimensions as Button size="icon"
+          <div className="h-10 w-10" aria-hidden="true" />
+        )}
         
         <Link href="/login">
           <Button variant="ghost" size="icon">
