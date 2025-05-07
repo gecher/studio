@@ -1,7 +1,7 @@
 
 'use client';
 
-import *ాలు
+import * as React from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
 import { PlusCircle, MessageSquare, Languages } from 'lucide-react';
@@ -75,3 +75,4 @@ export default function ChatbotResponsesPage() {
     </div>
   );
 }
+
