@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -11,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Video, CalendarDays, Clock, Search, UserMdIcon, MessageCircle, Star } from 'lucide-react'; // UserMdIcon needs to be created or replaced
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label'; // Added import
 
 // Placeholder UserMdIcon (FontAwesome style)
 const CustomUserMdIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -240,3 +242,4 @@ export default function TeleconsultationPage() {
     </div>
   );
 }
+

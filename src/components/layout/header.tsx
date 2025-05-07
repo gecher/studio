@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -14,22 +15,13 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 shadow-sm">
-      {isMobile && (
-        <SidebarTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="h-6 w-6" />
-            <span className="sr-only">Toggle Sidebar</span>
-          </Button>
-        </SidebarTrigger>
-      )}
-       {!isMobile && (
-        <SidebarTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <Menu className="h-6 w-6" />
-            <span className="sr-only">Toggle Sidebar</span>
-          </Button>
-        </SidebarTrigger>
-      )}
+      <SidebarTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Menu className="h-6 w-6" />
+          <span className="sr-only">Toggle Sidebar</span>
+        </Button>
+      </SidebarTrigger>
+      
       <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
         <PillIcon className="h-7 w-7 text-primary" />
         <span className="font-bold text-xl text-primary">EasyMeds Ethiopia</span>
@@ -88,3 +80,4 @@ function PillIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
