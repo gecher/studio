@@ -100,10 +100,9 @@ export default function ChatbotWidget() {
   };
 
   if (!mounted) {
-    // Render a placeholder div with the same dimensions and positioning as the Button.
-    // This avoids rendering a Button component that might conflict with Radix attribute injection during hydration.
-    // Button size="lg" (h-11) and className="w-16 h-16" means it's effectively 64x64px.
-    return <div className="fixed bottom-6 right-6 h-16 w-16" aria-hidden="true" data-ai-hint="chat bubble" />;
+    // Return null to ensure server and initial client renders match (render nothing)
+    // The component will "pop in" on the client after mount.
+    return null;
   }
 
   return (
@@ -200,3 +199,4 @@ export default function ChatbotWidget() {
     </Sheet>
   );
 }
+

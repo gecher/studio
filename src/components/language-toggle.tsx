@@ -28,9 +28,9 @@ export default function LanguageToggle() {
   };
 
   if (!mounted) {
-    // Render a placeholder div with the same dimensions as the Button size="icon" (h-10 w-10 => 40px)
-    // This avoids rendering a Button component that might conflict with Radix attribute injection during hydration
-    return <div className="h-10 w-10" aria-hidden="true" />;
+    // Return null to ensure server and initial client renders match (render nothing)
+    // The component will "pop in" on the client after mount.
+    return null;
   }
 
   return (
