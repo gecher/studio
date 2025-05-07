@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -37,16 +38,16 @@ export default function ChatbotWidget() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
+    if (scrollViewportRef.current) {
+      scrollViewportRef.current.scrollTo({
+        top: scrollViewportRef.current.scrollHeight,
         behavior: 'smooth',
       });
     }
@@ -99,18 +100,10 @@ export default function ChatbotWidget() {
   };
 
   if (!mounted) {
-    return (
-      <Button
-        variant="default"
-        size="lg"
-        className="fixed bottom-6 right-6 rounded-full shadow-xl w-16 h-16 p-0 bg-primary"
-        aria-label="Open support chat (loading)"
-        data-ai-hint="chat bubble"
-        disabled
-      >
-        <MessageSquare className="h-8 w-8 text-primary-foreground" />
-      </Button>
-    );
+    // Render a placeholder div with the same dimensions and positioning as the Button.
+    // This avoids rendering a Button component that might conflict with Radix attribute injection during hydration.
+    // Button size="lg" (h-11) and className="w-16 h-16" means it's effectively 64x64px.
+    return <div className="fixed bottom-6 right-6 h-16 w-16" aria-hidden="true" data-ai-hint="chat bubble" />;
   }
 
   return (
@@ -136,7 +129,7 @@ export default function ChatbotWidget() {
           </SheetDescription>
         </SheetHeader>
         
-        <ScrollArea className="flex-1 bg-background" viewportRef={scrollAreaRef}>
+        <ScrollArea className="flex-1 bg-background" viewportRef={scrollViewportRef}>
           <div className="p-4 space-y-4">
             {messages.map(message => (
               <div

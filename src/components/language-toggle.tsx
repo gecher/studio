@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -27,17 +28,15 @@ export default function LanguageToggle() {
   };
 
   if (!mounted) {
-    return (
-      <Button variant="ghost" size="icon" disabled>
-        <Languages className="h-5 w-5" />
-      </Button>
-    );
+    // Render a placeholder div with the same dimensions as the Button size="icon" (h-10 w-10 => 40px)
+    // This avoids rendering a Button component that might conflict with Radix attribute injection during hydration
+    return <div className="h-10 w-10" aria-hidden="true" />;
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" aria-label={`Current language: ${currentLanguage}. Change language`}>
           <Languages className="h-5 w-5" />
           <span className="sr-only">Change language</span>
         </Button>
@@ -53,3 +52,4 @@ export default function LanguageToggle() {
     </DropdownMenu>
   );
 }
+
