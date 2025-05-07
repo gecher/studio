@@ -13,8 +13,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import GoogleButton from '@/components/ui/google-button';
 import { Pill } from 'lucide-react';
-import { useAuth, MOCK_REGULAR_USER } from '@/contexts/auth-context'; // Import useAuth and MOCK_REGULAR_USER
-import { useState, useEffect } from 'react'; // Import useState and useEffect
+import { useAuth, MOCK_BASIC_CUSTOMER_USER } from '@/contexts/auth-context'; 
+import { useState, useEffect } from 'react'; 
 
 const signupSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters.' }),
@@ -23,7 +23,7 @@ const signupSchema = z.object({
   confirmPassword: z.string(),
 }).refine(data => data.password === data.confirmPassword, {
   message: 'Passwords do not match.',
-  path: ['confirmPassword'], // path to show error under
+  path: ['confirmPassword'], 
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -31,7 +31,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const auth = useAuth(); // Get auth context
+  const auth = useAuth(); 
   const {
     register,
     handleSubmit,
@@ -47,19 +47,17 @@ export default function SignupPage() {
   }, []);
 
   const onSubmit: SubmitHandler<SignupFormValues> = async (data) => {
-    // Mock signup
     await new Promise((resolve) => setTimeout(resolve, 1000));
     
-    // For mock purposes, create a user object similar to MOCK_REGULAR_USER structure
     const newUser = { 
-        ...MOCK_REGULAR_USER, // Spread base structure
+        ...MOCK_BASIC_CUSTOMER_USER, 
         id: `usr_${Date.now()}`, 
         name: data.fullName, 
         email: data.email, 
         dateJoined: new Date().toISOString().split('T')[0],
-        // Password should not be stored directly in currentUser state
+        password: data.password, // Keep password for mock logic
     };
-    auth.signup(newUser); // Use auth context signup
+    auth.signup(newUser); 
 
     toast({
       title: 'Account Created Successfully',
@@ -70,11 +68,16 @@ export default function SignupPage() {
 
   const handleGoogleSignUp = async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    // Simulate Google sign-up with a mock regular user
-    auth.signup(MOCK_REGULAR_USER); 
+    const googleUser = {
+      ...MOCK_BASIC_CUSTOMER_USER,
+      name: "Google User", // Example name
+      email: "googleuser@example.com", // Example email
+      id: `usr_google_${Date.now()}`
+    }
+    auth.signup(googleUser); 
     toast({
       title: 'Google Sign-Up Successful',
-      description: `Welcome, ${MOCK_REGULAR_USER.name}! Your account is created.`,
+      description: `Welcome, ${googleUser.name}! Your account is created.`,
     });
     router.push('/order-medicines'); 
   };
@@ -90,7 +93,33 @@ export default function SignupPage() {
         <CardDescription>Join EasyMeds for a healthier tomorrow.</CardDescription>
       </CardHeader>
       <CardContent>
-        {clientMounted ? (
+        {!clientMounted ? (
+          <div className="space-y-6 animate-pulse">
+            <div className="space-y-2">
+              <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label */}
+              <div className="h-10 bg-muted rounded"></div>      {/* Input */}
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label */}
+              <div className="h-10 bg-muted rounded"></div>      {/* Input */}
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label */}
+              <div className="h-10 bg-muted rounded"></div>      {/* Input */}
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label */}
+              <div className="h-10 bg-muted rounded"></div>      {/* Input */}
+            </div>
+            <div className="h-10 bg-primary/50 rounded"></div>   {/* Button */}
+            <div className="flex items-center">
+              <div className="flex-grow border-t border-border/50"></div>
+              <span className="mx-4 text-xs text-muted-foreground">OR</span>
+              <div className="flex-grow border-t border-border/50"></div>
+            </div>
+            <div className="h-10 bg-secondary rounded"></div>    {/* Google Button */}
+          </div>
+        ) : (
           <>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
@@ -149,37 +178,6 @@ export default function SignupPage() {
               Sign up with Google
             </GoogleButton>
           </>
-        ) : (
-          // Placeholder structure for SSR/pre-hydration
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="fullName-placeholder">Full Name</Label>
-              <Input id="fullName-placeholder" placeholder="Enter your full name" disabled />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email-placeholder">Email</Label>
-              <Input id="email-placeholder" type="email" placeholder="you@example.com" disabled />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password-placeholder">Password</Label>
-              <Input id="password-placeholder" type="password" placeholder="Create a strong password" disabled />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword-placeholder">Confirm Password</Label>
-              <Input id="confirmPassword-placeholder" type="password" placeholder="Confirm your password" disabled />
-            </div>
-            <Button type="button" className="w-full" disabled>
-              Sign Up
-            </Button>
-            <div className="my-6 flex items-center">
-              <div className="flex-grow border-t border-border"></div>
-              <span className="mx-4 text-xs text-muted-foreground">OR</span>
-              <div className="flex-grow border-t border-border"></div>
-            </div>
-            <GoogleButton disabled>
-              Sign up with Google
-            </GoogleButton>
-          </div>
         )}
       </CardContent>
       <CardFooter className="justify-center">

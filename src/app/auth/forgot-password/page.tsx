@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Pill, Undo2 } from 'lucide-react';
-import { useState, useEffect } from 'react'; // Import useState and useEffect
+import { useState, useEffect } from 'react'; 
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -38,14 +38,12 @@ export default function ForgotPasswordPage() {
   }, []);
 
   const onSubmit: SubmitHandler<ForgotPasswordFormValues> = async (data) => {
-    // Mock password reset request
     await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log('Forgot password for email:', data.email);
     toast({
       title: 'Password Reset Email Sent',
       description: 'If an account exists for this email, you will receive password reset instructions shortly.',
     });
-    // Optionally redirect or show a confirmation message on the page
   };
 
   return (
@@ -58,7 +56,15 @@ export default function ForgotPasswordPage() {
         <CardDescription>Enter your email to receive reset instructions.</CardDescription>
       </CardHeader>
       <CardContent>
-        {clientMounted ? (
+        {!clientMounted ? (
+          <div className="space-y-6 animate-pulse">
+            <div className="space-y-2">
+              <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label */}
+              <div className="h-10 bg-muted rounded"></div>      {/* Input */}
+            </div>
+            <div className="h-10 bg-primary/50 rounded"></div>   {/* Button */}
+          </div>
+        ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -75,17 +81,6 @@ export default function ForgotPasswordPage() {
               {isSubmitting ? 'Sending...' : 'Send Reset Link'}
             </Button>
           </form>
-        ) : (
-          // Placeholder structure for SSR/pre-hydration
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email-placeholder">Email</Label>
-              <Input id="email-placeholder" type="email" placeholder="you@example.com" disabled />
-            </div>
-            <Button type="button" className="w-full" disabled>
-              Send Reset Link
-            </Button>
-          </div>
         )}
       </CardContent>
       <CardFooter className="justify-center">

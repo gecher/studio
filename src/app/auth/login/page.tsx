@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation'; // Added useSearchParams
+import { useRouter, useSearchParams } from 'next/navigation'; 
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -48,26 +48,26 @@ export default function LoginPage() {
     let loggedInUser = null;
     let redirectPath = '/';
 
-    // Check credentials against mock users
-    if (data.email === MOCK_ADMIN_USER.email && data.password === 'adminpass') {
+    if (data.email === MOCK_ADMIN_USER.email && data.password === MOCK_ADMIN_USER.password) {
       loggedInUser = MOCK_ADMIN_USER;
       redirectPath = '/admin';
-    } else if (data.email === MOCK_BASIC_CUSTOMER_USER.email && data.password === 'customerpass') {
+    } else if (data.email === MOCK_BASIC_CUSTOMER_USER.email && data.password === MOCK_BASIC_CUSTOMER_USER.password) {
       loggedInUser = MOCK_BASIC_CUSTOMER_USER;
       redirectPath = searchParams.get('redirect') || '/order-medicines';
-    } else if (data.email === MOCK_PLUS_CUSTOMER_USER.email && data.password === 'pluspass') {
+    } else if (data.email === MOCK_PLUS_CUSTOMER_USER.email && data.password === MOCK_PLUS_CUSTOMER_USER.password) {
       loggedInUser = MOCK_PLUS_CUSTOMER_USER;
       redirectPath = searchParams.get('redirect') || '/order-medicines';
-    } else if (data.email === MOCK_PHARMACIST_USER.email && data.password === 'pharmacistpass') {
+    } else if (data.email === MOCK_PHARMACIST_USER.email && data.password === MOCK_PHARMACIST_USER.password) {
       loggedInUser = MOCK_PHARMACIST_USER;
-      redirectPath = '/admin/inventory'; // Example redirect for pharmacist
-    } else if (data.email === MOCK_DOCTOR_USER.email && data.password === 'doctorpass') {
+      redirectPath = '/admin/inventory'; 
+    } else if (data.email === MOCK_DOCTOR_USER.email && data.password === MOCK_DOCTOR_USER.password) {
       loggedInUser = MOCK_DOCTOR_USER;
-      redirectPath = '/admin/teleconsultations/appointments'; // Example redirect for doctor
-    } else if (data.email === MOCK_PARTNER_USER.email && data.password === 'partnerpass') {
+      redirectPath = '/admin/teleconsultations/appointments'; 
+    } else if (data.email === MOCK_PARTNER_USER.email && data.password === MOCK_PARTNER_USER.password) {
       loggedInUser = MOCK_PARTNER_USER;
-      redirectPath = '/admin/inventory'; // Example redirect for partner
+      redirectPath = '/admin/inventory'; 
     }
+
 
     if (loggedInUser) {
       auth.login(loggedInUser);
@@ -87,7 +87,6 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    // Simulate Google sign-in with a mock basic customer user
     auth.login(MOCK_BASIC_CUSTOMER_USER); 
     toast({
       title: 'Google Sign-In Successful',
@@ -106,7 +105,25 @@ export default function LoginPage() {
         <CardDescription>Log in to access your EasyMeds account.</CardDescription>
       </CardHeader>
       <CardContent>
-        {clientMounted ? (
+        {!clientMounted ? (
+           <div className="space-y-6 animate-pulse">
+            <div className="space-y-2">
+              <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label */}
+              <div className="h-10 bg-muted rounded"></div>      {/* Input */}
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 bg-muted rounded w-1/4"></div> {/* Label */}
+              <div className="h-10 bg-muted rounded"></div>      {/* Input */}
+            </div>
+            <div className="h-10 bg-primary/50 rounded"></div>   {/* Button */}
+            <div className="flex items-center">
+              <div className="flex-grow border-t border-border/50"></div>
+              <span className="mx-4 text-xs text-muted-foreground">OR</span>
+              <div className="flex-grow border-t border-border/50"></div>
+            </div>
+            <div className="h-10 bg-secondary rounded"></div>    {/* Google Button */}
+          </div>
+        ) : (
           <>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
@@ -149,31 +166,6 @@ export default function LoginPage() {
               Sign in with Google
             </GoogleButton>
           </>
-        ) : (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email-placeholder">Email</Label>
-              <Input id="email-placeholder" type="email" placeholder="you@example.com" disabled />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password-placeholder">Password</Label>
-                 <Button variant="link" size="sm" className="p-0 h-auto text-xs" disabled>Forgot password?</Button>
-              </div>
-              <Input id="password-placeholder" type="password" placeholder="••••••••" disabled />
-            </div>
-            <Button type="button" className="w-full" disabled>
-              Log In
-            </Button>
-            <div className="my-6 flex items-center">
-              <div className="flex-grow border-t border-border"></div>
-              <span className="mx-4 text-xs text-muted-foreground">OR</span>
-              <div className="flex-grow border-t border-border"></div>
-            </div>
-            <GoogleButton disabled>
-              Sign in with Google
-            </GoogleButton>
-          </div>
         )}
       </CardContent>
       <CardFooter className="justify-center">
