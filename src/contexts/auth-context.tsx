@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { User } from '@/app/admin/_types'; // Using existing User type for simplicity
+import type { User } from '@/app/admin/_types'; 
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
 
@@ -16,31 +16,85 @@ interface AuthContextType {
 
 const AUTH_STORAGE_KEY = 'easymeds_currentUser';
 
-// Mock admin user for demonstration
+// Mock users for demonstration
+const today = new Date().toISOString().split('T')[0];
+
 export const MOCK_ADMIN_USER: User = {
   id: 'usr_admin_001',
-  name: 'Admin User',
+  name: 'Admin EasyMeds',
   email: 'admin@example.com',
   role: 'admin',
   status: 'active',
-  dateJoined: new Date().toISOString().split('T')[0],
-  lastLogin: new Date().toISOString().split('T')[0],
-  accountType: 'basic', // Admins can also have an account type, or it can be role-specific
+  dateJoined: today,
+  lastLogin: today,
+  accountType: 'basic', 
+  avatarUrl: 'https://picsum.photos/seed/admin/200'
 };
 
-// Mock regular user for demonstration
-export const MOCK_REGULAR_USER: User = {
-  id: 'usr_mock_001',
-  name: 'Mock Customer',
+export const MOCK_BASIC_CUSTOMER_USER: User = {
+  id: 'usr_customer_001',
+  name: 'Abebe Bikila',
   email: 'customer@example.com',
   role: 'customer',
   status: 'active',
-  dateJoined: new Date().toISOString().split('T')[0],
-  lastLogin: new Date().toISOString().split('T')[0],
-  accountType: 'basic', // Default account type for a customer
+  dateJoined: today,
+  lastLogin: today,
+  accountType: 'basic',
   insuranceProvider: 'Nyala Insurance',
-  insurancePolicyNumber: 'NYL-MOCK-789',
+  insurancePolicyNumber: 'NYL-CUST-123',
   insuranceVerified: true,
+  avatarUrl: 'https://picsum.photos/seed/customer1/200'
+};
+
+export const MOCK_PLUS_CUSTOMER_USER: User = {
+  id: 'usr_customer_002',
+  name: 'Tirunesh Dibaba',
+  email: 'pluscustomer@example.com',
+  role: 'customer',
+  status: 'active',
+  dateJoined: today,
+  lastLogin: today,
+  accountType: 'easymeds_plus',
+  insuranceProvider: 'CBHI',
+  insurancePolicyNumber: 'CBHI-PLUS-456',
+  insuranceVerified: true,
+  avatarUrl: 'https://picsum.photos/seed/customer2/200'
+};
+
+export const MOCK_PHARMACIST_USER: User = {
+  id: 'usr_pharmacist_001',
+  name: 'Pharmacist Fatuma',
+  email: 'pharmacist@example.com',
+  role: 'pharmacist',
+  status: 'active',
+  dateJoined: today,
+  lastLogin: today,
+  accountType: 'basic', // Pharmacists don't have 'plus' tier
+  avatarUrl: 'https://picsum.photos/seed/pharmacist/200'
+};
+
+export const MOCK_DOCTOR_USER: User = {
+  id: 'usr_doctor_001',
+  name: 'Dr. Kenenisa',
+  email: 'doctor@example.com',
+  role: 'doctor',
+  status: 'active',
+  dateJoined: today,
+  lastLogin: today,
+  accountType: 'basic', // Doctors don't have 'plus' tier
+  avatarUrl: 'https://picsum.photos/seed/doctor/200'
+};
+
+export const MOCK_PARTNER_USER: User = {
+  id: 'usr_partner_001',
+  name: 'Bole Pharmacy Partner',
+  email: 'partner@example.com',
+  role: 'partner',
+  status: 'active',
+  dateJoined: today,
+  lastLogin: today,
+  accountType: 'basic', // Partners might have tiers later, but 'basic' for now
+  avatarUrl: 'https://picsum.photos/seed/partner/200'
 };
 
 
@@ -85,7 +139,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Failed to save user to localStorage during signup:", error);
     }
-    // Real app: API call, then potentially login or redirect to login
   };
 
   const logout = () => {
@@ -99,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const contextValue = {
-    isAuthenticated: mounted ? isAuthenticated : false, // Avoid hydration mismatch on initial load
+    isAuthenticated: mounted ? isAuthenticated : false, 
     currentUser: mounted ? currentUser : null,
     login,
     signup,

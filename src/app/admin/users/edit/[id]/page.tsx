@@ -31,7 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-const NO_PROVIDER_SELECTED_VALUE = "NO_PROVIDER_SELECTED_VALUE";
+const NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER = "NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER";
 
 const userEditSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -39,7 +39,7 @@ const userEditSchema = z.object({
   role: z.enum(['admin', 'pharmacist', 'customer', 'doctor', 'partner']),
   status: z.enum(['active', 'suspended', 'pending_verification']),
   accountType: z.enum(['basic', 'easymeds_plus']).default('basic'),
-  insuranceProvider: z.enum(['Nyala Insurance', 'CBHI', 'Other', NO_PROVIDER_SELECTED_VALUE]).optional(),
+  insuranceProvider: z.enum(['Nyala Insurance', 'CBHI', 'Other', NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER]).optional(),
   insurancePolicyNumber: z.string().optional(),
   insuranceVerified: z.boolean().default(false),
   newPassword: z.string().min(8, { message: "Password must be at least 8 characters." }).optional().or(z.literal('')),
@@ -55,13 +55,11 @@ export default function EditUserPage() {
 
   const [user, setUser] = React.useState<User | null>(null);
   
-  const { register, handleSubmit, control, formState: { errors }, reset, watch } = useForm<UserEditFormData>({
+  const { register, handleSubmit, control, formState: { errors }, reset, watch, setValue } = useForm<UserEditFormData>({
     resolver: zodResolver(userEditSchema),
   });
   
   const selectedRole = watch('role');
-  const showInsuranceFields = selectedRole === 'customer';
-  const showAccountTypeField = selectedRole === 'customer';
 
   React.useEffect(() => {
     const foundUser = mockUsers.find(u => u.id === userId);
@@ -70,7 +68,7 @@ export default function EditUserPage() {
       
       let formInsuranceProvider: UserEditFormData['insuranceProvider'];
       if (foundUser.insuranceProvider === null || foundUser.insuranceProvider === undefined) {
-        formInsuranceProvider = NO_PROVIDER_SELECTED_VALUE;
+        formInsuranceProvider = NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER;
       } else {
         formInsuranceProvider = foundUser.insuranceProvider;
       }
@@ -92,12 +90,24 @@ export default function EditUserPage() {
     }
   }, [userId, reset, router, toast]);
 
+  React.useEffect(() => {
+    if (selectedRole && selectedRole !== 'customer') {
+      setValue('accountType', 'basic');
+      setValue('insuranceProvider', NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER);
+      setValue('insurancePolicyNumber', '');
+      setValue('insuranceVerified', false);
+    }
+  }, [selectedRole, setValue]);
+
+  const showInsuranceFields = selectedRole === 'customer';
+  const showAccountTypeField = selectedRole === 'customer';
+
 
   const onSubmit: SubmitHandler<UserEditFormData> = async (formData) => {
     const { insuranceProvider, newPassword, ...restData } = formData;
 
     let finalInsuranceProvider: User['insuranceProvider'] = null;
-    if (insuranceProvider && insuranceProvider !== NO_PROVIDER_SELECTED_VALUE) {
+    if (selectedRole === 'customer' && insuranceProvider && insuranceProvider !== NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER) {
       finalInsuranceProvider = insuranceProvider as 'Nyala Insurance' | 'CBHI' | 'Other';
     }
     
@@ -106,21 +116,28 @@ export default function EditUserPage() {
         insuranceProvider: finalInsuranceProvider,
     };
 
-    if (newPassword) {
+    if (newPassword && newPassword.trim() !== '') {
         dataToSubmit.newPassword = newPassword;
     }
 
     console.log('Updated user data (transformed for submission):', dataToSubmit);
-    // Find index and update in mockUsers array if needed (for HMR or local state persistence)
     const userIndex = mockUsers.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
-        mockUsers[userIndex] = { 
-            ...mockUsers[userIndex], 
-            ...dataToSubmit,
-            // Ensure role and accountType are correctly updated
-            role: dataToSubmit.role as User['role'], 
-            accountType: dataToSubmit.accountType as User['accountType'],
-        } as User; // Type assertion might be needed if `dataToSubmit` doesn't fully match `User`
+        // Create an updated user object based on current user and submitted data
+        const updatedUser: User = {
+            ...mockUsers[userIndex], // Start with existing user data
+            name: dataToSubmit.name!,
+            email: dataToSubmit.email!,
+            role: dataToSubmit.role!,
+            status: dataToSubmit.status!,
+            accountType: dataToSubmit.accountType!,
+            insuranceProvider: dataToSubmit.insuranceProvider,
+            insurancePolicyNumber: dataToSubmit.insurancePolicyNumber || '', // Ensure empty string if undefined
+            insuranceVerified: dataToSubmit.insuranceVerified || false, // Ensure false if undefined
+            // lastLogin could be updated here if needed
+            // newPassword is not part of User type for storage
+        };
+        mockUsers[userIndex] = updatedUser;
     }
 
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -133,7 +150,6 @@ export default function EditUserPage() {
   
   const handleDeleteUser = async () => {
     console.log("Deleting user:", userId);
-    // Remove from mockUsers
     const userIndex = mockUsers.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
         mockUsers.splice(userIndex, 1);
@@ -259,12 +275,12 @@ export default function EditUserPage() {
                       name="insuranceProvider"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || NO_PROVIDER_SELECTED_VALUE}>
+                        <Select onValueChange={field.onChange} value={field.value || NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER}>
                           <SelectTrigger id="insuranceProvider">
                             <SelectValue placeholder="Select provider" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value={NO_PROVIDER_SELECTED_VALUE}>None</SelectItem>
+                            <SelectItem value={NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER}>None</SelectItem>
                             <SelectItem value="Nyala Insurance">Nyala Insurance</SelectItem>
                             <SelectItem value="CBHI">CBHI</SelectItem>
                             <SelectItem value="Other">Other</SelectItem>
@@ -299,7 +315,7 @@ export default function EditUserPage() {
           <CardFooter className="flex justify-between">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" type="button" disabled={user.id === 'usr_admin_001'}> {/* Disable delete for mock admin */}
+                <Button variant="destructive" type="button" disabled={user.id === MOCK_ADMIN_USER.id}> 
                   <Trash2 className="mr-2 h-4 w-4" /> Delete User
                 </Button>
               </AlertDialogTrigger>

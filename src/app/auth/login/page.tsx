@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation'; // Added useSearchParams
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,9 +13,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/hooks/use-toast';
 import GoogleButton from '@/components/ui/google-button';
 import { Pill } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
-import { MOCK_ADMIN_USER, MOCK_REGULAR_USER } from '@/contexts/auth-context'; // Import mock users
-import { useState, useEffect } from 'react'; // Import useState and useEffect
+import { useAuth, MOCK_ADMIN_USER, MOCK_BASIC_CUSTOMER_USER, MOCK_PLUS_CUSTOMER_USER, MOCK_PHARMACIST_USER, MOCK_DOCTOR_USER, MOCK_PARTNER_USER } from '@/contexts/auth-context';
+import { useState, useEffect } from 'react';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -26,6 +25,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const auth = useAuth();
   const {
@@ -43,24 +43,40 @@ export default function LoginPage() {
   }, []);
 
   const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 1000)); 
 
-    if (data.email === MOCK_ADMIN_USER.email && data.password === '1234') {
-      auth.login(MOCK_ADMIN_USER);
-      toast({
-        title: 'Admin Login Successful',
-        description: `Welcome back, ${MOCK_ADMIN_USER.name}!`,
-      });
-      router.push('/admin'); // Redirect admin to admin dashboard
-    } else if (data.email === MOCK_REGULAR_USER.email && data.password === 'password') { // Example regular user
-      auth.login(MOCK_REGULAR_USER);
-       toast({
-        title: 'Login Successful',
-        description: `Welcome back, ${MOCK_REGULAR_USER.name}!`,
-      });
-      router.push('/order-medicines');
+    let loggedInUser = null;
+    let redirectPath = '/';
+
+    // Check credentials against mock users
+    if (data.email === MOCK_ADMIN_USER.email && data.password === 'adminpass') {
+      loggedInUser = MOCK_ADMIN_USER;
+      redirectPath = '/admin';
+    } else if (data.email === MOCK_BASIC_CUSTOMER_USER.email && data.password === 'customerpass') {
+      loggedInUser = MOCK_BASIC_CUSTOMER_USER;
+      redirectPath = searchParams.get('redirect') || '/order-medicines';
+    } else if (data.email === MOCK_PLUS_CUSTOMER_USER.email && data.password === 'pluspass') {
+      loggedInUser = MOCK_PLUS_CUSTOMER_USER;
+      redirectPath = searchParams.get('redirect') || '/order-medicines';
+    } else if (data.email === MOCK_PHARMACIST_USER.email && data.password === 'pharmacistpass') {
+      loggedInUser = MOCK_PHARMACIST_USER;
+      redirectPath = '/admin/inventory'; // Example redirect for pharmacist
+    } else if (data.email === MOCK_DOCTOR_USER.email && data.password === 'doctorpass') {
+      loggedInUser = MOCK_DOCTOR_USER;
+      redirectPath = '/admin/teleconsultations/appointments'; // Example redirect for doctor
+    } else if (data.email === MOCK_PARTNER_USER.email && data.password === 'partnerpass') {
+      loggedInUser = MOCK_PARTNER_USER;
+      redirectPath = '/admin/inventory'; // Example redirect for partner
     }
-     else {
+
+    if (loggedInUser) {
+      auth.login(loggedInUser);
+      toast({
+        title: 'Login Successful',
+        description: `Welcome back, ${loggedInUser.name}!`,
+      });
+      router.push(redirectPath);
+    } else {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
@@ -71,13 +87,13 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    // Simulate Google sign-in with a mock regular user
-    auth.login(MOCK_REGULAR_USER); 
+    // Simulate Google sign-in with a mock basic customer user
+    auth.login(MOCK_BASIC_CUSTOMER_USER); 
     toast({
       title: 'Google Sign-In Successful',
-      description: `Welcome, ${MOCK_REGULAR_USER.name}!`,
+      description: `Welcome, ${MOCK_BASIC_CUSTOMER_USER.name}!`,
     });
-    router.push('/order-medicines');
+    router.push(searchParams.get('redirect') || '/order-medicines');
   };
 
   return (
@@ -134,7 +150,6 @@ export default function LoginPage() {
             </GoogleButton>
           </>
         ) : (
-          // Placeholder structure to match server render for form area
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email-placeholder">Email</Label>

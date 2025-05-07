@@ -18,8 +18,9 @@ import AdminHeader from '@/app/admin/_components/admin-header';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox'; 
 import type { User } from '@/app/admin/_types'; 
+import { mockUsers } from '@/app/admin/_lib/mock-data'; // Import mockUsers to add new user
 
-const NO_PROVIDER_SELECTED_VALUE = "NO_PROVIDER_SELECTED_VALUE"; // Represents no insurance
+const NO_PROVIDER_SELECTED_VALUE = "NO_PROVIDER_SELECTED_VALUE_PLACEHOLDER"; 
 
 const userSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -38,7 +39,7 @@ type UserFormData = z.infer<typeof userSchema>;
 export default function AddUserPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { register, handleSubmit, control, formState: { errors }, watch } = useForm<UserFormData>({
+  const { register, handleSubmit, control, formState: { errors }, watch, setValue } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
       role: 'customer',
@@ -50,6 +51,16 @@ export default function AddUserPage() {
   });
 
   const selectedRole = watch('role');
+  
+  React.useEffect(() => {
+    if (selectedRole !== 'customer') {
+      setValue('accountType', 'basic');
+      setValue('insuranceProvider', NO_PROVIDER_SELECTED_VALUE);
+      setValue('insurancePolicyNumber', '');
+      setValue('insuranceVerified', false);
+    }
+  }, [selectedRole, setValue]);
+
   const showInsuranceFields = selectedRole === 'customer';
   const showAccountTypeField = selectedRole === 'customer';
 
@@ -57,26 +68,24 @@ export default function AddUserPage() {
   const onSubmit: SubmitHandler<UserFormData> = async (formData) => {
     const { insuranceProvider, ...restData } = formData;
     
-    let finalInsuranceProvider: User['insuranceProvider'] = null;
-    if (insuranceProvider && insuranceProvider !== NO_PROVIDER_SELECTED_VALUE) {
+    let finalInsuranceProvider: User['insuranceProvider'] = null; // Default to null for non-customers or if 'None' is selected
+    if (selectedRole === 'customer' && insuranceProvider && insuranceProvider !== NO_PROVIDER_SELECTED_VALUE) {
       finalInsuranceProvider = insuranceProvider as 'Nyala Insurance' | 'CBHI' | 'Other';
     }
 
-    const dataToSubmit: Omit<User, 'lastLogin' | 'id' | 'dateJoined'> & { password?: string} = {
-      ...restData,
-      insuranceProvider: finalInsuranceProvider,
-    };
-    
     const newUserForStorage: User = {
-      ...dataToSubmit,
+      ...restData,
       id: `usr_${Date.now()}`, 
       dateJoined: new Date().toISOString().split('T')[0],
-      password: dataToSubmit.password, // This is just for mock data, in real app password is hashed
-    } as User; // Casting as we're fulfilling the User interface for mock
+      insuranceProvider: finalInsuranceProvider,
+      // For mock purposes, we don't store the actual password in the User object in mockUsers
+      // but it's available in formData.password if needed for an API call.
+      // Omitting password from newUserForStorage to align with User type not having password.
+    } as Omit<User, 'password'> as User; // Ensure User type is matched
 
-    console.log('New user data (transformed for submission):', newUserForStorage);
-    // Simulate API call & local storage update if needed
-    // For now, just log and redirect
+    console.log('New user data:', newUserForStorage);
+    mockUsers.push(newUserForStorage); // Add to mock data store
+    
     await new Promise(resolve => setTimeout(resolve, 1000));
     toast({
       title: "User Created",

@@ -4,14 +4,15 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'pharmacist' | 'customer' | 'doctor' | 'partner'; // Added 'partner'
+  role: 'admin' | 'pharmacist' | 'customer' | 'doctor' | 'partner';
   status: 'active' | 'suspended' | 'pending_verification';
   lastLogin?: string;
   dateJoined: string;
   insuranceProvider?: 'Nyala Insurance' | 'CBHI' | 'Other' | null;
   insurancePolicyNumber?: string;
   insuranceVerified?: boolean;
-  accountType: 'basic' | 'easymeds_plus'; // Added for Customer/User, can be optional or adjusted for others
+  accountType: 'basic' | 'easymeds_plus';
+  avatarUrl?: string;
 }
 
 export interface Product {
@@ -24,7 +25,8 @@ export interface Product {
   status: 'in_stock' | 'out_of_stock' | 'low_stock';
   lastUpdated: string;
   requiresPrescription?: boolean;
-  dataAiHint?: string; // Added for product card image hints
+  dataAiHint?: string; 
+  image?: string; // Added from product card
 }
 
 export interface Batch {
@@ -39,11 +41,11 @@ export interface Batch {
 
 export interface Order {
   id:string;
-  customerName: string; // Could be linked to User ID in a real system
+  customerName: string; 
   orderDate: string;
   totalAmount: number;
   status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Refunded';
-  paymentStatus: 'Paid' | 'Unpaid' | 'Pending Refund' | 'Refunded'; // Added 'Refunded'
+  paymentStatus: 'Paid' | 'Unpaid' | 'Pending Refund' | 'Refunded'; 
 }
 
 export interface OrderItem {
@@ -57,29 +59,28 @@ export interface OrderItem {
 
 export interface DiagnosticBooking {
   id: string;
-  patientName: string; // Could be linked to User ID
+  patientName: string; 
   testName: string;
   bookingDate: string;
   collectionSlot?: string;
   status: 'Pending' | 'SampleCollected' | 'ResultUploaded' | 'Completed' | 'Cancelled';
-  labId?: string; // Link to LabPartner
+  labId?: string; 
 }
 
-export interface LabPartner { // This can serve as a base for 'Partner' role if lab-specific
+export interface LabPartner { 
     id: string;
     name: string;
-    location: string; // Full address
+    location: string; 
     contactPerson: string;
     contactEmail: string;
     status: 'active' | 'inactive';
-    // partner-specific fields like transactionFeeRate, premiumTier, etc. can be added
 }
 
 export interface TeleconsultationAppointment {
     id: string;
-    patientName: string; // Could be linked to User ID
-    doctorId: string; // Link to DoctorProfile
-    doctorName?: string; // For display
+    patientName: string; 
+    doctorId: string; 
+    doctorName?: string; 
     specialty: string;
     appointmentDate: string;
     timeSlot: string;
@@ -87,24 +88,22 @@ export interface TeleconsultationAppointment {
     consultationFee: number;
 }
 
-export interface DoctorProfile { // For 'doctor' role
-    id: string; // Should map to a User ID
-    name: string; // From User
+export interface DoctorProfile { 
+    id: string; 
+    name: string; 
     specialty: string;
     licenseNumber: string;
     licenseVerified: boolean;
     yearsExperience: number;
-    status: 'active' | 'inactive' | 'pending_verification'; // Status of their doctor profile
-    // contactEmail, contactPhone from User or separate professional contact
-    // bio, profilePictureUrl
+    status: 'active' | 'inactive' | 'pending_verification'; 
     avatarUrl?: string;
 }
 
 export interface InsurancePolicy {
     id: string;
     policyNumber: string;
-    userId: string; // Link to user
-    userName?: string; // For display
+    userId: string; 
+    userName?: string; 
     provider: 'Nyala Insurance' | 'CBHI' | 'Other';
     status: 'active' | 'expired' | 'pending_verification';
     verificationDate?: string;
@@ -123,7 +122,7 @@ export interface InsuranceProvider {
     id: string;
     name: string;
     contactEmail: string;
-    apiEndpoint?: string; // For potential future integration
+    apiEndpoint?: string; 
     status: 'active' | 'inactive';
 }
 
@@ -136,28 +135,27 @@ export interface ContentItem {
     status: 'published' | 'draft' | 'archived';
     publishDate: string;
     author?: string;
-    href?: string; // Added for linking
-    summary?: string; // Added for card display
-    image?: string; // Added for card display
-    dataAiHint?: string; // Added for image hints
+    href?: string; 
+    summary?: string; 
+    image?: string; 
+    dataAiHint?: string; 
 }
 
-export interface Location { // For Pharmacy or Lab locations
+export interface Location { 
     id: string;
     name: string;
     type: 'pharmacy' | 'lab';
     address: string;
     contactNumber: string;
     status: 'active' | 'inactive';
-    services?: string[]; // e.g., ['Prescription Filling', 'OTC Sales'] or ['Blood Test', 'Urine Test']
-    // lat, lng for map
+    services?: string[]; 
     lat?: number;
     lng?: number;
 }
 
 export interface ChatbotResponse {
     id: string;
-    queryPattern: string; // e.g., "order status *", "what is *?"
+    queryPattern: string; 
     responseAmharic: string;
     responseEnglish: string;
     language: 'amharic' | 'english' | 'both';
@@ -169,7 +167,7 @@ export interface ChatbotLog {
     timestamp: string;
     query: string;
     language: 'amharic' | 'english';
-    response?: string; // Bot's response text
+    response?: string; 
     escalated: boolean;
 }
 
@@ -178,14 +176,14 @@ export interface GeneralSetting {
     value: string | number | boolean;
     description: string;
     type: 'string' | 'number' | 'boolean' | 'select';
-    options?: string[]; // For select type
+    options?: string[]; 
 }
 
 export interface SecurityLog {
     id: string;
     timestamp: string;
-    actor: string; // User ID or system process
-    action: string; // e.g., "Login Attempt", "Password Change", "Admin Action: X"
+    actor: string; 
+    action: string; 
     status: 'success' | 'failure';
     ipAddress?: string;
     details?: string;
@@ -193,22 +191,18 @@ export interface SecurityLog {
 
 export interface PaymentGatewaySetting {
     id: string;
-    name: 'Stripe' | 'Chapa' | 'Telebirr'; // Example local + international
+    name: 'Stripe' | 'Chapa' | 'Telebirr'; 
     apiKey: string;
     secretKey: string;
     isEnabled: boolean;
     environment: 'sandbox' | 'production';
 }
 
-// Pharmacy Partner type (could extend User if they log in, or be separate if managed by admin)
 export interface PharmacyPartner {
-  id: string; // Partner ID, could be linked to a User ID of role 'partner'
+  id: string; 
   pharmacyName: string;
   address: string;
   contactEmail: string;
   contactPhone: string;
   status: 'active' | 'inactive' | 'pending_approval';
-  // inventory management features, order fulfillment features etc.
-  // transactionFeeRate?: number;
-  // premiumTier?: boolean;
 }
