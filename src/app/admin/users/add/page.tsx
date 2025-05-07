@@ -2,11 +2,11 @@
 'use client';
 
 import * as React from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form'; // Added Controller
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Corrected import
+import { useRouter } from 'next/navigation'; 
 import { PlusCircle, Save, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import AdminHeader from '@/app/admin/_components/admin-header';
 import { useToast } from '@/hooks/use-toast';
-import { Checkbox } from '@/components/ui/checkbox'; // Added import for Checkbox
-import type { User } from '@/app/admin/_types'; // Import User type for consistency
+import { Checkbox } from '@/components/ui/checkbox'; 
+import type { User } from '@/app/admin/_types'; 
 
 const userSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
