@@ -1,7 +1,7 @@
 
 'use client';
 
-import *ాలు
+import * as React from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import Link from 'next/link';
 import { PlusCircle, UserCog, CheckCircle, XCircle } from 'lucide-react';
@@ -70,3 +70,4 @@ export default function ManageDoctorsPage() {
     </div>
   );
 }
+
