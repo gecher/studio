@@ -1,8 +1,7 @@
-
 'use client';
 
 import * as React from 'react';
-import { useForm, SubmitHandler, Controller } from 'react-hook-form'; // Added Controller
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
@@ -19,13 +18,15 @@ import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox'; 
 import type { User } from '@/app/admin/_types'; 
 
+const NO_PROVIDER_SELECTED_VALUE = "NO_PROVIDER_SELECTED_VALUE";
+
 const userSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
   role: z.enum(['admin', 'pharmacist', 'customer', 'doctor']),
   status: z.enum(['active', 'suspended', 'pending_verification']).default('pending_verification'),
-  insuranceProvider: z.enum(['Nyala Insurance', 'CBHI', 'Other', '']).optional(),
+  insuranceProvider: z.enum(['Nyala Insurance', 'CBHI', 'Other', NO_PROVIDER_SELECTED_VALUE]).optional(),
   insurancePolicyNumber: z.string().optional(),
   insuranceVerified: z.boolean().default(false),
 });
@@ -41,18 +42,35 @@ export default function AddUserPage() {
       role: 'customer',
       status: 'pending_verification',
       insuranceVerified: false,
+      insuranceProvider: undefined, // Explicitly undefined to show placeholder initially
     }
   });
 
   const showInsuranceFields = watch('role') === 'customer';
 
-  const onSubmit: SubmitHandler<UserFormData> = async (data) => {
-    console.log('New user data:', data);
+  const onSubmit: SubmitHandler<UserFormData> = async (formData) => {
+    const { insuranceProvider, ...restData } = formData;
+    
+    let finalInsuranceProvider: User['insuranceProvider'] = null;
+    if (insuranceProvider && insuranceProvider !== NO_PROVIDER_SELECTED_VALUE) {
+      finalInsuranceProvider = insuranceProvider as 'Nyala Insurance' | 'CBHI' | 'Other';
+    }
+
+    const dataToSubmit = {
+      ...restData,
+      insuranceProvider: finalInsuranceProvider,
+      // Ensure other fields match the User type or are transformed as needed
+      // For mock purposes, we'll log the transformed data
+      id: `usr_${Date.now()}`, // Mock ID generation
+      dateJoined: new Date().toISOString().split('T')[0], // Mock dateJoined
+    };
+
+    console.log('New user data (transformed for submission):', dataToSubmit);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     toast({
       title: "User Created",
-      description: `User ${data.name} has been successfully created.`,
+      description: `User ${formData.name} has been successfully created.`,
     });
     router.push('/admin/users'); 
   };
@@ -93,7 +111,7 @@ export default function AddUserPage() {
                   name="role"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="role">
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
@@ -114,7 +132,7 @@ export default function AddUserPage() {
                   name="status"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger id="status">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
@@ -140,7 +158,7 @@ export default function AddUserPage() {
                       name="insuranceProvider"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}> {/* Fallback to "" for placeholder if undefined */}
                           <SelectTrigger id="insuranceProvider">
                             <SelectValue placeholder="Select provider" />
                           </SelectTrigger>
@@ -148,7 +166,7 @@ export default function AddUserPage() {
                             <SelectItem value="Nyala Insurance">Nyala Insurance</SelectItem>
                             <SelectItem value="CBHI">CBHI</SelectItem>
                             <SelectItem value="Other">Other</SelectItem>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value={NO_PROVIDER_SELECTED_VALUE}>None</SelectItem>
                           </SelectContent>
                         </Select>
                       )}
@@ -173,7 +191,7 @@ export default function AddUserPage() {
                           />
                       )}
                     />
-                  <Label htmlFor="insuranceVerified">Insurance Verified</Label>
+                  <Label htmlFor="insuranceVerified" className="font-normal">Insurance Verified</Label>
                 </div>
               </>
             )}

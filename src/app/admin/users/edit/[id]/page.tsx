@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -31,15 +30,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+const NO_PROVIDER_SELECTED_VALUE = "NO_PROVIDER_SELECTED_VALUE";
+
 const userEditSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Invalid email address." }),
   role: z.enum(['admin', 'pharmacist', 'customer', 'doctor']),
   status: z.enum(['active', 'suspended', 'pending_verification']),
-  insuranceProvider: z.enum(['Nyala Insurance', 'CBHI', 'Other', '']).nullable().optional(),
+  insuranceProvider: z.enum(['Nyala Insurance', 'CBHI', 'Other', NO_PROVIDER_SELECTED_VALUE]).optional(),
   insurancePolicyNumber: z.string().optional(),
   insuranceVerified: z.boolean().default(false),
-  // Password field can be optional for edit, only updated if provided
   newPassword: z.string().min(8, { message: "Password must be at least 8 characters." }).optional().or(z.literal('')),
 });
 
@@ -53,23 +53,33 @@ export default function EditUserPage() {
 
   const [user, setUser] = React.useState<User | null>(null);
   
-  const { register, handleSubmit, control, formState: { errors }, reset, watch, setValue } = useForm<UserEditFormData>({
+  const { register, handleSubmit, control, formState: { errors }, reset, watch } = useForm<UserEditFormData>({
     resolver: zodResolver(userEditSchema),
   });
 
   React.useEffect(() => {
-    // Fetch user data - for now, use mock
     const foundUser = mockUsers.find(u => u.id === userId);
     if (foundUser) {
       setUser(foundUser);
+      
+      let formInsuranceProvider: UserEditFormData['insuranceProvider'];
+      if (foundUser.insuranceProvider === null) {
+        formInsuranceProvider = NO_PROVIDER_SELECTED_VALUE;
+      } else if (foundUser.insuranceProvider === undefined) {
+        formInsuranceProvider = undefined;
+      } else {
+        formInsuranceProvider = foundUser.insuranceProvider;
+      }
+
       reset({
         name: foundUser.name,
         email: foundUser.email,
         role: foundUser.role,
         status: foundUser.status,
-        insuranceProvider: foundUser.insuranceProvider || null,
+        insuranceProvider: formInsuranceProvider,
         insurancePolicyNumber: foundUser.insurancePolicyNumber || '',
         insuranceVerified: foundUser.insuranceVerified || false,
+        newPassword: '', // Keep newPassword empty by default
       });
     } else {
       toast({ variant: "destructive", title: "User not found" });
@@ -79,20 +89,34 @@ export default function EditUserPage() {
 
   const showInsuranceFields = watch('role') === 'customer';
 
-  const onSubmit: SubmitHandler<UserEditFormData> = async (data) => {
-    console.log('Updated user data:', data);
-    // Simulate API call
+  const onSubmit: SubmitHandler<UserEditFormData> = async (formData) => {
+    const { insuranceProvider, newPassword, ...restData } = formData;
+
+    let finalInsuranceProvider: User['insuranceProvider'] = null;
+    if (insuranceProvider && insuranceProvider !== NO_PROVIDER_SELECTED_VALUE) {
+      finalInsuranceProvider = insuranceProvider as 'Nyala Insurance' | 'CBHI' | 'Other';
+    }
+    
+    const dataToSubmit: Partial<User> & { newPassword?: string } = {
+        ...restData,
+        insuranceProvider: finalInsuranceProvider,
+    };
+
+    if (newPassword) {
+        dataToSubmit.newPassword = newPassword; // Or however password updates are handled
+    }
+
+    console.log('Updated user data (transformed for submission):', dataToSubmit);
     await new Promise(resolve => setTimeout(resolve, 1000));
     toast({
       title: "User Updated",
-      description: `User ${data.name}'s details have been successfully updated.`,
+      description: `User ${formData.name}'s details have been successfully updated.`,
     });
     router.push('/admin/users');
   };
   
   const handleDeleteUser = async () => {
     console.log("Deleting user:", userId);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     toast({
       title: "User Deleted",
@@ -104,7 +128,7 @@ export default function EditUserPage() {
 
 
   if (!user) {
-    return <div>Loading user data...</div>; // Or a proper loader
+    return <div>Loading user data...</div>;
   }
 
   return (
@@ -192,7 +216,7 @@ export default function EditUserPage() {
                       name="insuranceProvider"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}> {/* Fallback to "" for placeholder */}
                           <SelectTrigger id="insuranceProvider">
                             <SelectValue placeholder="Select provider" />
                           </SelectTrigger>
@@ -200,7 +224,7 @@ export default function EditUserPage() {
                             <SelectItem value="Nyala Insurance">Nyala Insurance</SelectItem>
                             <SelectItem value="CBHI">CBHI</SelectItem>
                             <SelectItem value="Other">Other</SelectItem>
-                             <SelectItem value="">None</SelectItem>
+                            <SelectItem value={NO_PROVIDER_SELECTED_VALUE}>None</SelectItem>
                           </SelectContent>
                         </Select>
                       )}
