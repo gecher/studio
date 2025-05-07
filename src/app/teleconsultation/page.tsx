@@ -9,10 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Video, CalendarDays, Clock, Search, UserMdIcon, MessageCircle, Star } from 'lucide-react'; // UserMdIcon needs to be created or replaced
+import { Video, CalendarDays, Clock, Search, MessageCircle, Star } from 'lucide-react'; 
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label'; // Added import
+import { Label } from '@/components/ui/label'; 
 
 // Placeholder UserMdIcon (FontAwesome style)
 const CustomUserMdIcon = (props: React.SVGProps<SVGSVGElement>) => (

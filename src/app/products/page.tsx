@@ -14,13 +14,13 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 
 // Mock data - replace with API calls
 const allProducts = [
-  { id: 'prod1', name: 'Digital Thermometer', price: '250 ETB', image: 'https://picsum.photos/seed/thermometer/300/200', category: 'Medical Devices', brand: 'BrandA', rating: 4.5, dataAiHint: 'digital thermometer' },
+  { id: 'prod1', name: 'Digital Thermometer', price: '250 ETB', image: 'https://picsum.photos/seed/thermometer/300/200', category: 'Medical Devices', brand: 'BrandA', rating: 4.5, dataAiHint: 'thermometer' },
   { id: 'prod2', name: 'Vitamin D3 Capsules', price: '180 ETB', image: 'https://picsum.photos/seed/vitamind/300/200', category: 'Supplements', brand: 'BrandB', rating: 4.2, dataAiHint: 'vitamin bottle' },
   { id: 'prod3', name: 'Hand Sanitizer (500ml)', price: '100 ETB', image: 'https://picsum.photos/seed/sanitizer/300/200', category: 'Personal Care', brand: 'BrandA', rating: 4.8, dataAiHint: 'sanitizer bottle' },
-  { id: 'prod4', name: 'First Aid Kit', price: '450 ETB', image: 'https://picsum.photos/seed/firstaid/300/200', category: 'First Aid', brand: 'BrandC', rating: 4.6, dataAiHint: 'first aid kit' },
+  { id: 'prod4', name: 'First Aid Kit', price: '450 ETB', image: 'https://picsum.photos/seed/firstaid/300/200', category: 'First Aid', brand: 'BrandC', rating: 4.6, dataAiHint: 'aid kit' },
   { id: 'prod5', name: 'Protein Powder (1kg)', price: '1200 ETB', image: 'https://picsum.photos/seed/protein/300/200', category: 'Supplements', brand: 'BrandB', rating: 4.9, dataAiHint: 'protein powder' },
   { id: 'prod6', name: 'Face Masks (Box of 50)', price: '150 ETB', image: 'https://picsum.photos/seed/facemasks/300/200', category: 'Personal Care', brand: 'BrandC', rating: 4.0, dataAiHint: 'face masks' },
-  { id: 'prod7', name: 'Glucometer', price: '800 ETB', image: 'https://picsum.photos/seed/glucometer/300/200', category: 'Medical Devices', brand: 'BrandA', rating: 4.7, dataAiHint: 'blood sugar monitor' },
+  { id: 'prod7', name: 'Glucometer', price: '800 ETB', image: 'https://picsum.photos/seed/glucometer/300/200', category: 'Medical Devices', brand: 'BrandA', rating: 4.7, dataAiHint: 'sugar monitor' },
   { id: 'prod8', name: 'Baby Diapers (Pack L)', price: '300 ETB', image: 'https://picsum.photos/seed/diapers/300/200', category: 'Baby Care', brand: 'BrandD', rating: 4.3, dataAiHint: 'baby diapers' },
 ];
 

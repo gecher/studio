@@ -7,23 +7,24 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Microscope, CalendarDays, Clock, Users, CheckCircle, Search, Package, Home } from 'lucide-react';
+import { Microscope, CalendarDays, Clock, Search, Package, Home, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Label } from '@/components/ui/label';
+import Image from 'next/image';
 
 // Mock data
 const popularTests = [
-  { id: 'test1', name: 'Complete Blood Count (CBC)', price: '300 ETB', description: 'Measures different components of your blood.', dataAiHint: 'blood test' },
-  { id: 'test2', name: 'Lipid Profile', price: '450 ETB', description: 'Measures cholesterol and triglyceride levels.', dataAiHint: 'cholesterol test' },
-  { id: 'test3', name: 'Thyroid Function Test (TFT)', price: '600 ETB', description: 'Checks how well your thyroid gland is working.', dataAiHint: 'thyroid scan' },
-  { id: 'test4', name: 'Blood Sugar (Fasting)', price: '150 ETB', description: 'Measures glucose levels after fasting.', dataAiHint: 'glucose meter' },
+  { id: 'test1', name: 'Complete Blood Count (CBC)', price: '300 ETB', description: 'Measures different components of your blood.', image: 'https://picsum.photos/seed/bloodtest/400/250', dataAiHint: 'blood test' },
+  { id: 'test2', name: 'Lipid Profile', price: '450 ETB', description: 'Measures cholesterol and triglyceride levels.', image: 'https://picsum.photos/seed/cholesteroltest/400/250', dataAiHint: 'cholesterol test' },
+  { id: 'test3', name: 'Thyroid Function Test (TFT)', price: '600 ETB', description: 'Checks how well your thyroid gland is working.', image: 'https://picsum.photos/seed/thyroidscan/400/250', dataAiHint: 'thyroid scan' },
+  { id: 'test4', name: 'Blood Sugar (Fasting)', price: '150 ETB', description: 'Measures glucose levels after fasting.', image: 'https://picsum.photos/seed/glucosemeter/400/250', dataAiHint: 'glucose meter' },
 ];
 
 const healthPackages = [
-  { id: 'pkg1', name: 'Basic Health Checkup', price: '1200 ETB', tests: ['CBC', 'Lipid Profile', 'Blood Sugar'], description: 'Essential tests for a general health overview.', dataAiHint: 'health package' },
-  { id: 'pkg2', name: 'Advanced Cardiac Profile', price: '2500 ETB', tests: ['Lipid Profile', 'ECG', 'Troponin-I'], description: 'Comprehensive heart health assessment.', dataAiHint: 'heart checkup' },
-  { id: 'pkg3', name: 'Diabetes Care Package', price: '1800 ETB', tests: ['Blood Sugar (Fasting & PP)', 'HbA1c', 'Kidney Function Test'], description: 'Monitor and manage diabetes effectively.', dataAiHint: 'diabetes care' },
+  { id: 'pkg1', name: 'Basic Health Checkup', price: '1200 ETB', tests: ['CBC', 'Lipid Profile', 'Blood Sugar'], description: 'Essential tests for a general health overview.', image: 'https://picsum.photos/seed/healthpackage/400/250', dataAiHint: 'health package' },
+  { id: 'pkg2', name: 'Advanced Cardiac Profile', price: '2500 ETB', tests: ['Lipid Profile', 'ECG', 'Troponin-I'], description: 'Comprehensive heart health assessment.', image: 'https://picsum.photos/seed/heartcheckup/400/250', dataAiHint: 'heart checkup' },
+  { id: 'pkg3', name: 'Diabetes Care Package', price: '1800 ETB', tests: ['Blood Sugar (Fasting & PP)', 'HbA1c', 'Kidney Function Test'], description: 'Monitor and manage diabetes effectively.', image: 'https://picsum.photos/seed/diabetescare/400/250', dataAiHint: 'diabetes care' },
 ];
 
 export default function DiagnosticsPage() {
@@ -76,6 +77,15 @@ export default function DiagnosticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTests.map(test => (
             <Card key={test.id} className="hover:shadow-xl transition-shadow duration-300 flex flex-col">
+              <div className="relative w-full h-48 bg-secondary">
+                <Image
+                    src={test.image}
+                    alt={test.name}
+                    layout="fill"
+                    objectFit="cover"
+                    data-ai-hint={test.dataAiHint}
+                  />
+              </div>
               <CardHeader>
                 <CardTitle>{test.name}</CardTitle>
                 <CardDescription>{test.description}</CardDescription>
@@ -100,6 +110,15 @@ export default function DiagnosticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPackages.map(pkg => (
             <Card key={pkg.id} className="hover:shadow-xl transition-shadow duration-300 flex flex-col">
+              <div className="relative w-full h-48 bg-secondary">
+                 <Image
+                    src={pkg.image}
+                    alt={pkg.name}
+                    layout="fill"
+                    objectFit="cover"
+                    data-ai-hint={pkg.dataAiHint}
+                  />
+              </div>
               <CardHeader>
                 <CardTitle>{pkg.name}</CardTitle>
                 <CardDescription>{pkg.description}</CardDescription>

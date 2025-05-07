@@ -54,7 +54,7 @@ const subscriptionPlans = [
       'Dedicated family health manager (coming soon)',
     ],
     actionLabel: 'Choose Family Plan',
-    dataAiHint: 'family subscription'
+    dataAiHint: 'family plan'
   },
 ];
 
@@ -174,4 +174,3 @@ const UserMdIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <circle cx="12" cy="7" r="3"/>
   </svg>
 );
-

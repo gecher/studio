@@ -10,7 +10,7 @@ import Link from "next/link";
 
 // Mock cart items - replace with actual cart data logic
 const mockCartItems = [
-  { id: 'med1', name: 'Amoxicillin 250mg', price: 80, quantity: 2, image: 'https://picsum.photos/seed/amoxicillin_cart/100/100', dataAiHint: 'medicine pills' },
+  { id: 'med1', name: 'Amoxicillin 250mg', price: 80, quantity: 2, image: 'https://picsum.photos/seed/amoxicillin_cart/100/100', dataAiHint: 'pills medicine' },
   { id: 'otc1', name: 'Vitamin C Tablets', price: 90, quantity: 1, image: 'https://picsum.photos/seed/vitaminc_cart/100/100', dataAiHint: 'vitamin bottle' },
 ];
 

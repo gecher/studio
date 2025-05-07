@@ -18,7 +18,7 @@ const availableProviders = [
     { id: 'prov1', name: 'Ethiopian Insurance Corporation (EIC)', image: 'https://picsum.photos/seed/eiclogo/100/50?grayscale', dataAiHint: 'insurance logo' },
     { id: 'prov2', name: 'Awash Insurance Company S.C.', image: 'https://picsum.photos/seed/awashlogo/100/50?grayscale', dataAiHint: 'company logo' },
     { id: 'prov3', name: 'Nile Insurance Company S.C.', image: 'https://picsum.photos/seed/nilelogo/100/50?grayscale', dataAiHint: 'insurance company' },
-    { id: 'prov4', name: 'Nyala Insurance S.C.', image: 'https://picsum.photos/seed/nyalalogo/100/50?grayscale', dataAiHint: 'logo brand' },
+    { id: 'prov4', name: 'Nyala Insurance S.C.', image: 'https://picsum.photos/seed/nyalalogo/100/50?grayscale', dataAiHint: 'brand logo' },
 ];
 
 

@@ -9,7 +9,7 @@ import ProductCard from '@/components/product-card'; // Assuming this will be cr
 const featuredProducts = [
   { id: '1', name: 'Multivitamins', price: '150 ETB', image: 'https://picsum.photos/seed/multivitamin/300/200', dataAiHint: 'vitamin pills' },
   { id: '2', name: 'Pain Relief Gel', price: '120 ETB', image: 'https://picsum.photos/seed/painrelief/300/200', dataAiHint: 'ointment tube' },
-  { id: '3', name: 'Digital Thermometer', price: '250 ETB', image: 'https://picsum.photos/seed/thermometer/300/200', dataAiHint: 'digital thermometer' },
+  { id: '3', name: 'Digital Thermometer', price: '250 ETB', image: 'https://picsum.photos/seed/thermometer/300/200', dataAiHint: 'thermometer' },
 ];
 
 const featuredArticles = [
