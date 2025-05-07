@@ -3,9 +3,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { LucideIcon } from 'lucide-react';
 import {
   HomeIcon,
-  Pill as PillIconLucide, // Renamed to avoid conflict
+  Pill as PillIconLucide, 
   FlaskConical,
   Video,
   Repeat,
@@ -26,12 +27,21 @@ import {
   SidebarHeader,
   SidebarFooter,
   useSidebar,
-  SheetClose // Ensure SheetClose is imported if used within mobile sidebar
+  SheetClose 
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useChatbot } from '@/contexts/chatbot-context';
 
-const navItems = [
+interface NavItem {
+  href?: string;
+  label: string;
+  icon: LucideIcon;
+  adminOnly?: boolean;
+  action?: () => void;
+}
+
+const navItemsList = (setIsChatbotOpen: (open: boolean) => void): NavItem[] => [
   { href: '/', label: 'Home', icon: HomeIcon },
   { href: '/order-medicines', label: 'Order Medicines', icon: PillIconLucide },
   { href: '/products', label: 'Healthcare Products', icon: BriefcaseMedical },
@@ -42,24 +52,30 @@ const navItems = [
   { href: '/pharmacy-locator', label: 'Pharmacy Locator', icon: MapPin },
   { href: '/insurance', label: 'My Insurance', icon: ShieldCheck },
   { href: '/profile', label: 'User Profile', icon: UserCircle2 },
-  { href: '/support', label: 'Support Chatbot', icon: MessageCircle },
+  { 
+    label: 'Support Chatbot', 
+    icon: MessageCircle, 
+    action: () => setIsChatbotOpen(true) 
+  },
   { href: '/admin', label: 'Admin Dashboard', icon: Settings2, adminOnly: true },
 ];
 
 export default function SidebarNav() {
   const pathname = usePathname();
   const { openMobile, setOpenMobile, isMobile } = useSidebar();
+  const { setIsChatbotOpen } = useChatbot();
 
   // Placeholder for admin check
   const isAdmin = true; 
+  
+  const currentNavItems = navItemsList(setIsChatbotOpen);
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
       <SidebarHeader className="p-4 flex items-center justify-between">
-        {/* Logo can go here if needed, or keep it minimal */}
         {isMobile && (
           <SheetClose asChild>
-            <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent hover:text-accent-foreground">
+            <Button variant="ghost" size="icon" className="text-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </Button>
           </SheetClose>
@@ -67,32 +83,53 @@ export default function SidebarNav() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {navItems.map((item) => {
+          {currentNavItems.map((item) => {
             if (item.adminOnly && !isAdmin) {
               return null;
             }
             const Icon = item.icon;
-            const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
-            return (
-              <SidebarMenuItem key={item.label}>
-                <Link href={item.href} passHref legacyBehavior>
+            const isActive = item.href ? (pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))) : false;
+
+            if (item.action) {
+              return (
+                <SidebarMenuItem key={item.label}>
                   <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    onClick={() => isMobile && setOpenMobile(false)}
+                    onClick={() => {
+                      item.action!();
+                      if (isMobile) setOpenMobile(false);
+                    }}
+                    isActive={false} // Action items typically don't have an 'active' state like links
                     tooltip={{ children: item.label, side: 'right', align: 'center' }}
-                    className={cn(
-                      isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    )}
+                    className={cn("hover:bg-sidebar-accent hover:text-sidebar-accent-foreground")}
                   >
-                    <a>
-                      <Icon className="h-5 w-5" />
-                      <span>{item.label}</span>
-                    </a>
+                    <Icon className="h-5 w-5" />
+                    <span>{item.label}</span>
                   </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            );
+                </SidebarMenuItem>
+              );
+            } else if (item.href) {
+              return (
+                <SidebarMenuItem key={item.label}>
+                  <Link href={item.href} passHref legacyBehavior>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      onClick={() => isMobile && setOpenMobile(false)}
+                      tooltip={{ children: item.label, side: 'right', align: 'center' }}
+                      className={cn(
+                        isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <a>
+                        <Icon className="h-5 w-5" />
+                        <span>{item.label}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              );
+            }
+            return null;
           })}
         </SidebarMenu>
       </SidebarContent>
@@ -102,4 +139,3 @@ export default function SidebarNav() {
     </Sidebar>
   );
 }
-

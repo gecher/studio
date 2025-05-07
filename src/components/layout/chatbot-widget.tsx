@@ -14,10 +14,11 @@ import {
 } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Send, Bot, User, Loader2 } from 'lucide-react';
+import { MessageSquare, Send, Bot, User, Loader2, X } from 'lucide-react';
 import { supportChatbot, type SupportChatbotInput, type SupportChatbotOutput } from '@/ai/flows/support-chatbot';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useChatbot } from '@/contexts/chatbot-context';
 
 interface ChatMessage {
   id: string;
@@ -27,7 +28,7 @@ interface ChatMessage {
 
 export default function ChatbotWidget() {
   const [mounted, setMounted] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const { isChatbotOpen, setIsChatbotOpen } = useChatbot();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'initial-bot-message',
@@ -51,7 +52,7 @@ export default function ChatbotWidget() {
         behavior: 'smooth',
       });
     }
-  }, [messages]);
+  }, [messages, isChatbotOpen]); // Also scroll when sheet opens
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -100,13 +101,12 @@ export default function ChatbotWidget() {
   };
 
   if (!mounted) {
-    // Return null to ensure server and initial client renders match (render nothing)
-    // The component will "pop in" on the client after mount.
-    return null;
+    // Render a placeholder for the FAB to prevent hydration mismatch
+    return <div className="fixed bottom-6 right-6 w-16 h-16" aria-hidden="true" />;
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <Sheet open={isChatbotOpen} onOpenChange={setIsChatbotOpen}>
       <SheetTrigger asChild>
         <Button
           variant="default"
@@ -115,7 +115,7 @@ export default function ChatbotWidget() {
           aria-label="Open support chat"
           data-ai-hint="chat bubble"
         >
-          <MessageSquare className="h-8 w-8 text-primary-foreground" />
+          {isChatbotOpen ? <X className="h-8 w-8 text-primary-foreground" /> : <MessageSquare className="h-8 w-8 text-primary-foreground" /> }
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-full max-w-md flex flex-col p-0 data-[state=open]:shadow-2xl">
@@ -199,4 +199,3 @@ export default function ChatbotWidget() {
     </Sheet>
   );
 }
-
