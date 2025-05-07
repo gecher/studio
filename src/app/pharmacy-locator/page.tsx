@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { getNearbyPharmacies, type Pharmacy } from '@/services/pharmacy-locator';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { MapPin, Search, Navigation, Phone, List } from 'lucide-react';
 import Image from 'next/image';
@@ -140,3 +141,4 @@ export default function PharmacyLocatorPage() {
     </div>
   );
 }
+
