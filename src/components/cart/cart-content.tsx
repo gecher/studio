@@ -1,8 +1,9 @@
+
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +23,7 @@ export default function CartPageContent() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+      <div className="flex flex-col items-center justify-center h-full p-6 text-center flex-1">
         <ShoppingCart className="w-24 h-24 text-muted-foreground mb-6" />
         <h2 className="text-2xl font-semibold mb-2">Your Cart is Empty</h2>
         <p className="text-muted-foreground mb-6">Looks like you haven't added anything to your cart yet.</p>
@@ -34,39 +35,33 @@ export default function CartPageContent() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-2xl flex items-center gap-2">
-          <ShoppingCart className="text-primary" /> Your Shopping Cart
-        </CardTitle>
-        <CardDescription>Review items in your cart and proceed to checkout.</CardDescription>
-      </CardHeader>
-      <Separator />
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-        {cartItems.map(item => (
-          <div key={item.id} className="flex items-center gap-4 p-3 bg-secondary/50 rounded-lg">
-            <Image 
-                src={item.image} 
-                alt={item.name} 
-                width={64} 
-                height={64} 
-                className="rounded-md border"
-                data-ai-hint={item.dataAiHint}
-            />
-            <div className="flex-grow">
-              <h3 className="font-semibold">{item.name}</h3>
-              <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
-              <p className="text-sm font-medium">{(item.price * item.quantity).toFixed(2)} ETB</p>
+    <>
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-4">
+          {cartItems.map(item => (
+            <div key={item.id} className="flex items-center gap-4 p-3 bg-secondary/50 rounded-lg">
+              <Image 
+                  src={item.image} 
+                  alt={item.name} 
+                  width={64} 
+                  height={64} 
+                  className="rounded-md border"
+                  data-ai-hint={item.dataAiHint}
+              />
+              <div className="flex-grow">
+                <h3 className="font-semibold">{item.name}</h3>
+                <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
+                <p className="text-sm font-medium">{(item.price * item.quantity).toFixed(2)} ETB</p>
+              </div>
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80">
+                <Trash2 className="w-5 h-5" />
+                <span className="sr-only">Remove item</span>
+              </Button>
             </div>
-            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80">
-              <Trash2 className="w-5 h-5" />
-              <span className="sr-only">Remove item</span>
-            </Button>
-          </div>
-        ))}
-      </CardContent>
-      <Separator />
-      <CardFooter className="p-4 flex-col space-y-3">
+          ))}
+        </div>
+      </ScrollArea>
+      <div className="p-4 flex-col space-y-3 border-t bg-card">
         <div className="w-full flex justify-between text-sm">
           <span>Subtotal:</span>
           <span className="font-medium">{subtotal.toFixed(2)} ETB</span>
@@ -86,7 +81,7 @@ export default function CartPageContent() {
         <Link href="/order-medicines" className="w-full">
           <Button variant="outline" className="w-full">Continue Shopping</Button>
         </Link>
-      </CardFooter>
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -7,16 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import LanguageToggle from '@/components/language-toggle';
-import { SheetTrigger, Sheet, SheetContent } from '@/components/ui/sheet';
+import { SheetTrigger, Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import CartPageContent from '@/components/cart/cart-content';
-// Removed: import { useState, useEffect } from 'react'; // No longer needed for 'mounted' state in Header
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 
 export default function Header() {
   const { isMobile } = useSidebar();
-  // Removed: const [mounted, setMounted] = useState(false);
-  // Removed: useEffect(() => { setMounted(true); }, []);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 shadow-sm">
@@ -40,23 +41,44 @@ export default function Header() {
         />
       </div>
       <div className="flex items-center gap-2 md:gap-4">
-        <LanguageToggle /> {/* Render directly, LanguageToggle handles its own mounting */}
+        {mounted ? (
+          <LanguageToggle />
+        ) : (
+          // Placeholder for LanguageToggle: A simple div with same dimensions as Button size="icon" (h-10 w-10 for Radix compatibility)
+          <div className="h-10 w-10" aria-hidden="true" />
+        )}
         
-        <Sheet> {/* Render directly, SheetTrigger with Button is generally SSR safe */}
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="sr-only">Open Cart</span>
-              {/* Optional: Add a badge for item count */}
-              {/* <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">3</span> */}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-full sm:max-w-md p-0">
-            <CartPageContent />
-          </SheetContent>
-        </Sheet>
+        {mounted ? (
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                <span className="sr-only">Open Cart</span>
+                {/* Optional: Add a badge for item count */}
+                {/* <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">3</span> */}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0 data-[state=open]:shadow-2xl">
+               <SheetHeader className="p-4 border-b bg-card">
+                <SheetTitle className="text-2xl flex items-center gap-2">
+                  <ShoppingCart className="text-primary h-6 w-6" />
+                  Your Shopping Cart
+                </SheetTitle>
+                <SheetDescription className="text-sm">
+                  Review items in your cart and proceed to checkout.
+                </SheetDescription>
+              </SheetHeader>
+              <CartPageContent />
+            </SheetContent>
+          </Sheet>
+        ) : (
+          <Button variant="ghost" size="icon" className="relative" disabled>
+            <ShoppingCart className="h-5 w-5" />
+            <span className="sr-only">Open Cart (loading)</span>
+          </Button>
+        )}
         
-        <Link href="/login">
+        <Link href="/profile">
           <Button variant="ghost" size="icon">
             <UserCircle2 className="h-5 w-5" />
             <span className="sr-only">User Profile</span>
