@@ -2,24 +2,21 @@
 
 import Link from 'next/link';
 import { Menu, Search, ShoppingCart, UserCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import type { ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import LanguageToggle from '@/components/language-toggle';
 import { SheetTrigger, Sheet, SheetContent } from '@/components/ui/sheet';
 import CartPageContent from '@/components/cart/cart-content';
-import { useState, useEffect } from 'react';
+// Removed: import { useState, useEffect } from 'react'; // No longer needed for 'mounted' state in Header
 import { cn } from '@/lib/utils';
 
 
 export default function Header() {
   const { isMobile } = useSidebar();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Removed: const [mounted, setMounted] = useState(false);
+  // Removed: useEffect(() => { setMounted(true); }, []);
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 shadow-sm">
@@ -43,31 +40,21 @@ export default function Header() {
         />
       </div>
       <div className="flex items-center gap-2 md:gap-4">
-        {mounted ? (
-          <LanguageToggle />
-        ) : (
-          // Placeholder for LanguageToggle: A simple div with same dimensions as Button size="icon" (h-10 w-10 for Radix compatibility)
-          <div className="h-10 w-10" aria-hidden="true" />
-        )}
+        <LanguageToggle /> {/* Render directly, LanguageToggle handles its own mounting */}
         
-        {mounted ? (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
-                <span className="sr-only">Open Cart</span>
-                {/* Optional: Add a badge for item count */}
-                {/* <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">3</span> */}
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:max-w-md p-0">
-              <CartPageContent />
-            </SheetContent>
-          </Sheet>
-        ) : (
-          // Placeholder for Cart Trigger: A simple div with same dimensions as Button size="icon"
-          <div className="h-10 w-10" aria-hidden="true" />
-        )}
+        <Sheet> {/* Render directly, SheetTrigger with Button is generally SSR safe */}
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
+              <ShoppingCart className="h-5 w-5" />
+              <span className="sr-only">Open Cart</span>
+              {/* Optional: Add a badge for item count */}
+              {/* <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">3</span> */}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full sm:max-w-md p-0">
+            <CartPageContent />
+          </SheetContent>
+        </Sheet>
         
         <Link href="/login">
           <Button variant="ghost" size="icon">
